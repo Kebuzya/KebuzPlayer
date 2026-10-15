@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags: [ "v*" ]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Check version matches tag
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}".TrimStart("v")
+          $csproj = ([xml](Get-Content KebuzPlayer/KebuzPlayer.csproj)).Project.PropertyGroup |
+            ForEach-Object { $_.Version } | Where-Object { $_ } | Select-Object -First 1
+          if ($csproj -ne $tag) {
+            Write-Error "Version mismatch: tag=$tag csproj=$csproj"
+            exit 1
+          }
+          "VER=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Test
+        run: dotnet test KebuzPlayer.Core.Tests -c Release
+
+      - name: Build release assets
+        shell: pwsh
+        run: ./installer/build-release.ps1 -Iscc "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+
+      - name: Stage release assets
+        shell: pwsh
+        run: |
+          $rel = Join-Path (Split-Path $env:GITHUB_WORKSPACE -Parent) "release/$env:VER"
+          New-Item -ItemType Directory -Force "release-assets" | Out-Null
+          Copy-Item "$rel/*" "release-assets/"
+          Get-ChildItem "release-assets"
+
+      - name: Read release notes from the tag
+        shell: pwsh
+        run: |
+          git fetch --force --tags origin
+          git tag -l --format='%(contents)' "${{ github.ref_name }}" | Out-File -FilePath release-notes.md -Encoding utf8
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: KebuzPlayer ${{ env.VER }}
+          body_path: release-notes.md
+          draft: true
+          fail_on_unmatched_files: true
+          files: release-assets/*

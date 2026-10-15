@@ -1,0 +1,150 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KebuzPlayer.ViewModels"
+             xmlns:c="using:KebuzPlayer.Controls"
+             x:Class="KebuzPlayer.Views.FolderExplorerView"
+             x:DataType="vm:FolderExplorerViewModel">
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="EntryTemplate" x:DataType="vm:ExplorerEntry">
+            <Grid ColumnDefinitions="20,*" Background="Transparent">
+                <Grid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="{DynamicResource Track.Edit}" Click="EditMetadata_Click" />
+                        <MenuItem Header="{DynamicResource Track.BatchEdit}" Click="BatchEditMetadata_Click" />
+                        <Separator />
+                        <MenuItem Header="{DynamicResource Track.Hide}" Click="HideTrack_Click" />
+                        <MenuItem Header="{DynamicResource Track.Unhide}" Click="UnhideTrack_Click" />
+                        <Separator />
+                        <MenuItem Header="{DynamicResource Track.DeleteToBin}" Click="DeleteFile_Click" />
+                        <MenuItem Header="{DynamicResource Track.ShowInFolder}" Click="ShowInFolder_Click" />
+                    </ContextMenu>
+                </Grid.ContextMenu>
+                <Panel Grid.Column="0" VerticalAlignment="Center">
+                    <Path Stretch="None" Fill="{DynamicResource TextDim}"
+                          IsVisible="{Binding IsDirectory}"
+                          Data="M0,2 L5,2 6.5,4 14,4 14,12 0,12 Z" />
+                    <Path Stretch="None" Fill="{DynamicResource TextDim}"
+                          IsVisible="{Binding !IsDirectory}"
+                          Data="M4,1 L11,1 11,10.5 A2.2,2.2 0 1 1 9,8.3 L9,3.4 6,3.4 6,12 A2.2,2.2 0 1 1 4,9.8 Z" />
+                </Panel>
+                <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="13" Margin="6,0,0,0"
+                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="*,Auto">
+        <Grid Grid.Row="0" ColumnDefinitions="260,1,*,1,*" Margin="20,14,20,0">
+
+            <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*" Margin="0,0,10,0">
+                <TextBlock Grid.Row="0" Classes="mono" Text="{DynamicResource Explorer.FoldersHeader}" FontSize="11"
+                           LetterSpacing="1.2" Foreground="{DynamicResource Acc}" Margin="0,4,0,8" />
+                <Button Grid.Row="1" Classes="ghost" HorizontalAlignment="Stretch"
+                        Content="{DynamicResource Folder.Add}" IsEnabled="{Binding !IsScanning}"
+                        Command="{Binding AddFolderCommand}" />
+                <Grid Grid.Row="2" Margin="0,8,0,0">
+                    <ListBox x:Name="FoldersList" Classes="explorer" ItemsSource="{Binding Folders}"
+                             Background="Transparent" SelectionMode="Single"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FolderRowViewModel">
+                                <Border BorderBrush="{DynamicResource BorderSoft}" BorderThickness="0,0,0,1"
+                                        Padding="0,8" Background="Transparent" DoubleTapped="Folder_DoubleTapped"
+                                        ToolTip.Tip="{DynamicResource Explorer.FolderListTip}">
+                                    <Border.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="{DynamicResource Explorer.OpenInPane}" Click="OpenFolderInPane_Click" />
+                                            <MenuItem Header="{DynamicResource Explorer.OpenInWindows}" Click="OpenFolderInExplorer_Click" />
+                                            <MenuItem Header="{DynamicResource Explorer.Relocate}" Click="RelocateFolder_Click" />
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
+                                    <StackPanel Spacing="3">
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                            <CheckBox Grid.Column="0" IsChecked="{Binding IsActive}"
+                                                      VerticalAlignment="Center" Margin="0,0,8,0"
+                                                      ToolTip.Tip="{DynamicResource Explorer.ActiveTip}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Path}" FontSize="12"
+                                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                                       ToolTip.Tip="{Binding Path}" />
+                                            <Button Grid.Column="2" Classes="ghost" Content="{DynamicResource Explorer.Scan}"
+                                                    FontSize="11" Padding="6,2" VerticalAlignment="Center"
+                                                    Click="RescanFolder_Click" ToolTip.Tip="{DynamicResource Explorer.ScanTip}" />
+                                            <Button Grid.Column="3" Classes="ghost" Content="{DynamicResource Common.Remove}"
+                                                    FontSize="11" Padding="6,2" VerticalAlignment="Center"
+                                                    Click="RemoveFolder_Click" />
+                                        </Grid>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="26,0,0,0">
+                                            <TextBlock Classes="mono dim" Text="{Binding CountText}" FontSize="11" />
+                                            <TextBlock Classes="mono dim" Text="·" FontSize="11" />
+                                            <TextBlock Classes="mono dim" Text="{Binding SizeText}" FontSize="11" />
+                                        </StackPanel>
+                                        <TextBlock Classes="mono dim" Text="{Binding ScanText}" FontSize="11"
+                                                   Margin="26,0,0,0" />
+                                        <TextBlock Classes="mono" Text="{Binding MissingText}" FontSize="11"
+                                                   Margin="26,0,0,0" TextWrapping="Wrap"
+                                                   Foreground="{DynamicResource Acc2}"
+                                                   IsVisible="{Binding IsMissing}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Border x:Name="FolderDropIndicator" IsVisible="False" Height="2"
+                            Background="{DynamicResource Acc}" VerticalAlignment="Top"
+                            HorizontalAlignment="Stretch" IsHitTestVisible="False" />
+                </Grid>
+            </Grid>
+
+            <Border Grid.Column="1" Background="{DynamicResource BorderSoft}" />
+
+            <Grid Grid.Column="2" x:Name="LeftPane" RowDefinitions="Auto,Auto,*"
+                  DataContext="{Binding Left}" Margin="10,0,10,0">
+                <c:KebuzComboBox Grid.Row="0" HorizontalAlignment="Stretch"
+                          FontFamily="{StaticResource FontMono}" FontSize="12"
+                          ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedRoot}" />
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,8">
+                    <Button Grid.Column="0" Classes="ctrl" Command="{Binding GoUpCommand}"
+                            IsEnabled="{Binding CanGoUp}" ToolTip.Tip="{DynamicResource Explorer.Up}">
+                        <Path Data="M6,2 L6,12 M6,2 L2.5,5.5 M6,2 L9.5,5.5" Classes="stroke" Stretch="None" />
+                    </Button>
+                    <TextBlock Grid.Column="1" Classes="mono dim" Text="{Binding CurrentPath}" FontSize="11"
+                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="8,0,0,0" />
+                </Grid>
+                <ListBox Grid.Row="2" x:Name="LeftList" Classes="explorer"
+                         ItemsSource="{Binding Entries}"
+                         ItemTemplate="{StaticResource EntryTemplate}"
+                         SelectionMode="Multiple"
+                         Background="Transparent" />
+            </Grid>
+
+            <Border Grid.Column="3" Background="{DynamicResource BorderSoft}" />
+
+            <Grid Grid.Column="4" x:Name="RightPane" RowDefinitions="Auto,Auto,*"
+                  DataContext="{Binding Right}" Margin="10,0,0,0">
+                <c:KebuzComboBox Grid.Row="0" HorizontalAlignment="Stretch"
+                          FontFamily="{StaticResource FontMono}" FontSize="12"
+                          ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedRoot}" />
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,8">
+                    <Button Grid.Column="0" Classes="ctrl" Command="{Binding GoUpCommand}"
+                            IsEnabled="{Binding CanGoUp}" ToolTip.Tip="{DynamicResource Explorer.Up}">
+                        <Path Data="M6,2 L6,12 M6,2 L2.5,5.5 M6,2 L9.5,5.5" Classes="stroke" Stretch="None" />
+                    </Button>
+                    <TextBlock Grid.Column="1" Classes="mono dim" Text="{Binding CurrentPath}" FontSize="11"
+                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="8,0,0,0" />
+                </Grid>
+                <ListBox Grid.Row="2" x:Name="RightList" Classes="explorer"
+                         ItemsSource="{Binding Entries}"
+                         ItemTemplate="{StaticResource EntryTemplate}"
+                         SelectionMode="Multiple"
+                         Background="Transparent" />
+            </Grid>
+        </Grid>
+
+        <Border Grid.Row="1"
+                BorderBrush="{DynamicResource BorderSoft}" BorderThickness="0,1,0,0"
+                Padding="20,7" Margin="0,14,0,0">
+            <TextBlock Classes="mono dim" Text="{Binding StatusText}" FontSize="11" />
+        </Border>
+    </Grid>
+</UserControl>

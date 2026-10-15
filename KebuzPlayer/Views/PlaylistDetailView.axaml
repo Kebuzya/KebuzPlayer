@@ -1,0 +1,198 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KebuzPlayer.ViewModels"
+             xmlns:c="using:KebuzPlayer.Controls"
+             x:Class="KebuzPlayer.Views.PlaylistDetailView"
+             x:DataType="vm:PlaylistDetailViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto,Auto" Margin="20,14">
+            <Button Grid.Column="0" Classes="ghost" Content="{DynamicResource Playlist.Back}"
+                    Command="{Binding BackCommand}" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
+                        Margin="14,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Name}" FontSize="15" VerticalAlignment="Center" />
+                <TextBlock Classes="mono dim" Text="{Binding CountText}" FontSize="11"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4"
+                        VerticalAlignment="Center" Margin="0,0,12,0">
+                <c:KebuzComboBox Width="150" FontFamily="{StaticResource FontMono}" FontSize="12"
+                          VerticalAlignment="Center" Margin="0,0,4,0"
+                          ItemsSource="{Binding SortOptions}"
+                          SelectedItem="{Binding SortOption}">
+                    <c:KebuzComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TrackSortOption">
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </c:KebuzComboBox.ItemTemplate>
+                </c:KebuzComboBox>
+                <Button Classes="ctrl" Command="{Binding ToggleSortDirectionCommand}"
+                        Margin="0,0,8,0" IsEnabled="{Binding !IsManualSort}"
+                        ToolTip.Tip="{DynamicResource Sort.Direction}">
+                    <Panel Width="12" Height="14">
+                        <Path Data="M6,1 L6,13 M6,13 L2.5,9.5 M6,13 L9.5,9.5" Classes="stroke"
+                              Stretch="None" IsVisible="{Binding !SortDescending}" />
+                        <Path Data="M6,13 L6,1 M6,1 L2.5,4.5 M6,1 L9.5,4.5" Classes="stroke"
+                              Stretch="None" IsVisible="{Binding SortDescending}" />
+                    </Panel>
+                </Button>
+                <Button Classes="ctrl" Classes.active="{Binding IsTableMode}"
+                        Command="{Binding SetViewModeCommand}" CommandParameter="Table"
+                        ToolTip.Tip="{DynamicResource View.Table}">
+                    <Path Data="M0,1 L14,1 14,3.4 0,3.4 Z M0,5.8 L14,5.8 14,8.2 0,8.2 Z M0,10.6 L14,10.6 14,13 0,13 Z" Stretch="None" />
+                </Button>
+                <Button Classes="ctrl" Classes.active="{Binding IsGridMode}"
+                        Command="{Binding SetViewModeCommand}" CommandParameter="Grid"
+                        ToolTip.Tip="{DynamicResource View.Grid}">
+                    <Path Data="M0,0 L6,0 6,6 0,6 Z M8,0 L14,0 14,6 8,6 Z M0,8 L6,8 6,14 0,14 Z M8,8 L14,8 14,14 8,14 Z" Stretch="None" />
+                </Button>
+                <Button Classes="ctrl" Classes.active="{Binding IsCompactMode}"
+                        Command="{Binding SetViewModeCommand}" CommandParameter="Compact"
+                        ToolTip.Tip="{DynamicResource View.Compact}">
+                    <Path Data="M0,1.5 L14,1.5 14,3 0,3 Z M0,5 L14,5 14,6.5 0,6.5 Z M0,8.5 L14,8.5 14,10 0,10 Z M0,12 L14,12 14,13.5 0,13.5 Z" Stretch="None" />
+                </Button>
+            </StackPanel>
+            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8">
+                <Button Classes="primary" Content="{DynamicResource Playlist.Play}"
+                        Command="{Binding PlayAllCommand}" />
+                <Button x:Name="AddTracksButton" Classes="ghost" Content="{DynamicResource Playlist.AddTracks}"
+                        Click="AddTracks_Click">
+                    <Button.Flyout>
+                        <Flyout Placement="BottomEdgeAlignedRight">
+                            <Grid RowDefinitions="Auto,*,Auto" Width="400" Height="440">
+                                <TextBox Grid.Row="0" Classes="search" PlaceholderText="{DynamicResource Common.Search}"
+                                         Text="{Binding PickerSearch}" />
+                                <ListBox Grid.Row="1" ItemsSource="{Binding PickerItems}"
+                                         Margin="0,8" Background="Transparent">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:PickerItem">
+                                            <CheckBox IsChecked="{Binding IsChecked}"
+                                                      FontSize="12">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{Binding Track.Title}" FontSize="12"
+                                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                    <TextBlock Classes="mono dim" Text="{Binding Track.Artist}" FontSize="11"
+                                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </CheckBox>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                                <Button Grid.Row="2" Classes="primary" HorizontalAlignment="Right"
+                                        Content="{Binding PickerAddText}"
+                                        Click="ConfirmPicker_Click" />
+                            </Grid>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+                <Button Classes="ghost" Content="{DynamicResource Playlist.RemoveSelected}"
+                        Command="{Binding RemoveSelectedCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1" IsVisible="{Binding IsTableMode}"
+                BorderBrush="{DynamicResource BorderSoft}" BorderThickness="0,0,0,1">
+            <Grid x:Name="HeaderRow" ColumnDefinitions="34,*,150,170,56" Margin="20,0,20,0">
+                <Grid.Styles>
+                    <Style Selector="TextBlock">
+                        <Setter Property="FontFamily" Value="{StaticResource FontMono}" />
+                        <Setter Property="FontSize" Value="11" />
+                        <Setter Property="LetterSpacing" Value="0.8" />
+                        <Setter Property="Foreground" Value="{DynamicResource TextDim}" />
+                    </Style>
+                </Grid.Styles>
+                <TextBlock Grid.Column="0" Text="№" Margin="0,0,0,8" />
+                <TextBlock Grid.Column="1" Text="{DynamicResource Column.Title}" Margin="0,0,0,8" />
+                <TextBlock Grid.Column="2" Text="{DynamicResource Column.Artist}" Margin="0,0,0,8" />
+                <TextBlock Grid.Column="3" Text="{DynamicResource Column.Album}" Margin="0,0,0,8" />
+                <TextBlock Grid.Column="4" Text="{DynamicResource Column.Duration}" Margin="0,0,0,8" />
+                <Rectangle Grid.Column="0" Width="1" Fill="{DynamicResource BorderSoft}"
+                           HorizontalAlignment="Right" Margin="0,0,5,4" />
+                <Rectangle Grid.Column="1" Width="1" Fill="{DynamicResource BorderSoft}"
+                           HorizontalAlignment="Right" Margin="0,0,5,4" />
+                <Rectangle Grid.Column="2" Width="1" Fill="{DynamicResource BorderSoft}"
+                           HorizontalAlignment="Right" Margin="0,0,5,4" />
+                <Rectangle Grid.Column="3" Width="1" Fill="{DynamicResource BorderSoft}"
+                           HorizontalAlignment="Right" Margin="0,0,5,4" />
+            </Grid>
+        </Border>
+
+        <Panel Grid.Row="2">
+        <ListBox x:Name="RowsList"
+                 Classes.libTable="{Binding IsTableMode}"
+                 Classes.libGrid="{Binding IsGridMode}"
+                 Classes.libCompact="{Binding IsCompactMode}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ItemsSource="{Binding Rows}"
+                 SelectionMode="Multiple"
+                 SelectionChanged="Rows_SelectionChanged"
+                 DoubleTapped="Rows_DoubleTapped">
+            <ListBox.Resources>
+                <ItemsPanelTemplate x:Key="ListItemsPanel">
+                    <VirtualizingStackPanel />
+                </ItemsPanelTemplate>
+                <ItemsPanelTemplate x:Key="GridItemsPanel">
+                    <c:JustifiedWrapPanel />
+                </ItemsPanelTemplate>
+                <DataTemplate x:Key="GridRowTemplate" x:DataType="vm:TrackRow">
+                    <c:TrackCardControl />
+                </DataTemplate>
+                <DataTemplate x:Key="CompactRowTemplate" x:DataType="vm:TrackRow">
+                    <Grid ColumnDefinitions="34,*,56" Background="Transparent">
+                        <TextBlock Grid.Column="0" Classes="mono dim" Text="{Binding Number}"
+                                   FontSize="11" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,0,10,0">
+                            <TextBlock Text="{Binding Track.Title}" FontSize="12"
+                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            <TextBlock Classes="mono dim" Text="{Binding Track.Artist}" FontSize="11"
+                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Classes="mono dim" Text="{Binding Track.DurationFormatted}"
+                                   FontSize="11" TextAlignment="Right" VerticalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.Resources>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:TrackRow">
+                    <Grid ColumnDefinitions="34,*,150,170,56" Background="Transparent">
+                        <TextBlock Grid.Column="0" Classes="mono dim" Text="{Binding Number}"
+                                   FontSize="11" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding Track.Title}" FontSize="14"
+                                   TextTrimming="CharacterEllipsis" Margin="0,0,10,0" />
+                        <TextBlock Grid.Column="2" Classes="mono dim" Text="{Binding Track.Artist}"
+                                   FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="3" Classes="mono dim" Text="{Binding Track.Album}"
+                                   FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,0,10,0"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="4" Classes="mono dim" Text="{Binding Track.DurationFormatted}"
+                                   FontSize="12" VerticalAlignment="Center" />
+                        <Rectangle Grid.Column="0" Width="1" Fill="{DynamicResource RowLine}"
+                                   HorizontalAlignment="Right" Margin="0,-9,5,-9" />
+                        <Rectangle Grid.Column="1" Width="1" Fill="{DynamicResource RowLine}"
+                                   HorizontalAlignment="Right" Margin="0,-9,5,-9" />
+                        <Rectangle Grid.Column="2" Width="1" Fill="{DynamicResource RowLine}"
+                                   HorizontalAlignment="Right" Margin="0,-9,5,-9" />
+                        <Rectangle Grid.Column="3" Width="1" Fill="{DynamicResource RowLine}"
+                                   HorizontalAlignment="Right" Margin="0,-9,5,-9" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <Rectangle x:Name="DropIndicator" Height="2" Fill="{DynamicResource Acc}"
+                   HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                   IsVisible="False" IsHitTestVisible="False" />
+        <Rectangle x:Name="DropIndicatorV" Width="2" Fill="{DynamicResource Acc}"
+                   HorizontalAlignment="Left" VerticalAlignment="Top"
+                   IsVisible="False" IsHitTestVisible="False" />
+        </Panel>
+
+        <Border Grid.Row="3"
+                BorderBrush="{DynamicResource BorderSoft}" BorderThickness="0,1,0,0"
+                Padding="20,7">
+            <TextBlock Classes="mono dim" Text="{Binding StatusText}" FontSize="11" />
+        </Border>
+    </Grid>
+</UserControl>

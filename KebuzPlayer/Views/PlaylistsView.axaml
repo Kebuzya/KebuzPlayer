@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KebuzPlayer.ViewModels"
+             x:Class="KebuzPlayer.Views.PlaylistsView"
+             x:DataType="vm:PlaylistsViewModel">
+    <UserControl.Styles>
+        <Style Selector="Border.plCard">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Border.plCard:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Inset}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Panel>
+    <Grid RowDefinitions="Auto,*,Auto" IsVisible="{Binding IsOverviewVisible}">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" Margin="20,14">
+            <Button Classes="primary" Content="{DynamicResource Playlists.New}" Click="Create_Click" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="1" Classes="mono dim" Text="{DynamicResource Playlists.Empty}" FontSize="12"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   IsVisible="{Binding IsEmpty}" />
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Playlists}" Margin="14,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PlaylistCardViewModel">
+                        <Border Classes="plCard" Margin="6" Padding="8"
+                                Tapped="Card_Tapped">
+                            <Border.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="{DynamicResource Playlists.Rename}" Click="Rename_Click" />
+                                    <MenuItem Header="{DynamicResource Common.Delete}" Click="Delete_Click" />
+                                </ContextMenu>
+                            </Border.ContextMenu>
+                            <StackPanel Spacing="6" Width="140">
+                                <Border Width="140" Height="140"
+                                        Background="{DynamicResource Inset2}"
+                                        BorderBrush="{DynamicResource BorderStrong}" BorderThickness="1">
+                                    <Panel>
+                                        <TextBlock Classes="mono" Text="♪" FontSize="30"
+                                                   Foreground="{DynamicResource TextDim}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <Image Source="{Binding Cover}" Stretch="UniformToFill" />
+                                    </Panel>
+                                </Border>
+                                <TextBlock Text="{Binding Name}" FontSize="13"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Classes="mono dim" Text="{Binding CountText}" FontSize="11" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <Border Grid.Row="2"
+                BorderBrush="{DynamicResource BorderSoft}" BorderThickness="0,1,0,0"
+                Padding="20,7">
+            <TextBlock Classes="mono dim" Text="{Binding StatusText}" FontSize="11" />
+        </Border>
+    </Grid>
+    <ContentControl Content="{Binding Detail}" IsVisible="{Binding !IsOverviewVisible}" />
+    </Panel>
+</UserControl>

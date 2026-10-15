@@ -1,0 +1,468 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style Selector="TextBlock.mono">
+        <Setter Property="FontFamily" Value="{StaticResource FontMono}" />
+    </Style>
+
+    <Style Selector="TextBlock.dim">
+        <Setter Property="Foreground" Value="{DynamicResource TextDim}" />
+    </Style>
+
+    <Style Selector="TextBlock.faint">
+        <Setter Property="Foreground" Value="{DynamicResource TextFaint}" />
+    </Style>
+
+    <Style Selector="TextBlock.sectionTitle">
+        <Setter Property="FontFamily" Value="{StaticResource FontMono}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="LetterSpacing" Value="1.3" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDim}" />
+    </Style>
+
+    <Style Selector="Button.winBtn">
+        <Setter Property="Width" Value="34" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.winBtn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Inset}" />
+    </Style>
+    <Style Selector="Button.winBtn > Path">
+        <Setter Property="Fill" Value="{DynamicResource TextDim}" />
+    </Style>
+
+    <Style Selector="Button.primary">
+        <Setter Property="FontFamily" Value="{StaticResource FontMono}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource Text}" />
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderStrong}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Padding" Value="12,7" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Inset}" />
+    </Style>
+
+    <Style Selector="Button.ghost">
+        <Setter Property="FontFamily" Value="{StaticResource FontMono}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDim}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Padding" Value="12,7" />
+    </Style>
+    <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Inset}" />
+    </Style>
+
+    <Style Selector="ListBox.tabbar">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="6" />
+            </ItemsPanelTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ListBox.tabbar > ListBoxItem">
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ListBox.tabbar > ListBoxItem /template/ ContentPresenter,
+                     ListBox.tabbar > ListBoxItem:pointerover /template/ ContentPresenter,
+                     ListBox.tabbar > ListBoxItem:selected /template/ ContentPresenter,
+                     ListBox.tabbar > ListBoxItem:selected:focus /template/ ContentPresenter,
+                     ListBox.tabbar > ListBoxItem:selected:pointerover /template/ ContentPresenter,
+                     ListBox.tabbar > ListBoxItem:selected:focus:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.tabbar > ListBoxItem TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource TextDim}" />
+    </Style>
+    <Style Selector="ListBox.tabbar > ListBoxItem Path">
+        <Setter Property="Fill" Value="{DynamicResource TextDim}" />
+    </Style>
+    <Style Selector="ListBox.tabbar > ListBoxItem:pointerover TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Text}" />
+    </Style>
+    <Style Selector="ListBox.tabbar > ListBoxItem:selected">
+        <Setter Property="Background" Value="{DynamicResource Inset}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Acc}" />
+    </Style>
+    <Style Selector="ListBox.tabbar > ListBoxItem:selected TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Text}" />
+    </Style>
+    <Style Selector="ListBox.tabbar > ListBoxItem:selected Path">
+        <Setter Property="Fill" Value="{DynamicResource Acc}" />
+    </Style>
+
+    <Style Selector="Button.ctrl">
+        <Setter Property="Width" Value="26" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderStrong}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.ctrl:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Inset}" />
+    </Style>
+    <Style Selector="Button.ctrl Path">
+        <Setter Property="Fill" Value="{DynamicResource TextDim}" />
+    </Style>
+    <Style Selector="Button.ctrl Path.stroke">
+        <Setter Property="Fill" Value="{x:Null}" />
+        <Setter Property="Stroke" Value="{DynamicResource TextDim}" />
+        <Setter Property="StrokeThickness" Value="1.7" />
+        <Setter Property="StrokeLineCap" Value="Round" />
+        <Setter Property="StrokeJoin" Value="Round" />
+    </Style>
+    <Style Selector="Button.ctrl.active Path">
+        <Setter Property="Fill" Value="{DynamicResource Acc2}" />
+    </Style>
+    <Style Selector="Button.ctrl.active Path.stroke">
+        <Setter Property="Fill" Value="{x:Null}" />
+        <Setter Property="Stroke" Value="{DynamicResource Acc2}" />
+    </Style>
+    <Style Selector="Button.ctrl.active TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Acc2}" />
+    </Style>
+
+    <Style Selector="Button.play">
+        <Setter Property="Width" Value="30" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="{DynamicResource AccA15}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Acc}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.play:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AccA20}" />
+    </Style>
+    <Style Selector="Button.play Path">
+        <Setter Property="Fill" Value="{DynamicResource Acc}" />
+    </Style>
+
+    <Style Selector="Button.ctrl.active">
+        <Setter Property="BorderBrush" Value="{DynamicResource Acc2}" />
+    </Style>
+
+    <Style Selector="Button.cover">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.cover:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.cover:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="Slider.thin">
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Foreground" Value="{DynamicResource Acc}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid Background="Transparent">
+                    <Border Height="4" VerticalAlignment="Center"
+                            Background="{DynamicResource Inset2}"
+                            BorderBrush="{DynamicResource BorderSoft}"
+                            BorderThickness="1" />
+                    <Track Name="PART_Track"
+                           Minimum="{TemplateBinding Minimum}"
+                           Maximum="{TemplateBinding Maximum}"
+                           Value="{TemplateBinding Value, Mode=TwoWay}"
+                           Orientation="Horizontal">
+                        <Track.DecreaseButton>
+                            <RepeatButton Name="PART_DecreaseButton" Focusable="False">
+                                <RepeatButton.Template>
+                                    <ControlTemplate>
+                                        <Panel Background="Transparent">
+                                            <Border Height="4" VerticalAlignment="Center"
+                                                    Background="{Binding $parent[Slider].Foreground}" />
+                                        </Panel>
+                                    </ControlTemplate>
+                                </RepeatButton.Template>
+                            </RepeatButton>
+                        </Track.DecreaseButton>
+                        <Track.IncreaseButton>
+                            <RepeatButton Name="PART_IncreaseButton" Focusable="False">
+                                <RepeatButton.Template>
+                                    <ControlTemplate>
+                                        <Border Background="Transparent" />
+                                    </ControlTemplate>
+                                </RepeatButton.Template>
+                            </RepeatButton>
+                        </Track.IncreaseButton>
+                        <Thumb Width="11" Height="11">
+                            <Thumb.Template>
+                                <ControlTemplate>
+                                    <Border Background="{Binding $parent[Slider].Foreground}" />
+                                </ControlTemplate>
+                            </Thumb.Template>
+                        </Thumb>
+                    </Track>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="Slider.thin.progress">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid Background="Transparent">
+                    <Border Height="7" VerticalAlignment="Center"
+                            Background="{DynamicResource Inset2}"
+                            BorderBrush="{DynamicResource BorderSoft}"
+                            BorderThickness="1" />
+                    <Track Name="PART_Track"
+                           Minimum="{TemplateBinding Minimum}"
+                           Maximum="{TemplateBinding Maximum}"
+                           Value="{TemplateBinding Value, Mode=TwoWay}"
+                           Orientation="Horizontal">
+                        <Track.DecreaseButton>
+                            <RepeatButton Name="PART_DecreaseButton" Focusable="False">
+                                <RepeatButton.Template>
+                                    <ControlTemplate>
+                                        <Panel Background="Transparent">
+                                            <Border Height="5" Margin="1,0" VerticalAlignment="Center"
+                                                    Background="{Binding $parent[Slider].Foreground}" />
+                                        </Panel>
+                                    </ControlTemplate>
+                                </RepeatButton.Template>
+                            </RepeatButton>
+                        </Track.DecreaseButton>
+                        <Track.IncreaseButton>
+                            <RepeatButton Name="PART_IncreaseButton" Focusable="False">
+                                <RepeatButton.Template>
+                                    <ControlTemplate>
+                                        <Border Background="Transparent" />
+                                    </ControlTemplate>
+                                </RepeatButton.Template>
+                            </RepeatButton>
+                        </Track.IncreaseButton>
+                        <Thumb Width="13" Height="13">
+                            <Thumb.Template>
+                                <ControlTemplate>
+                                    <Border Background="{Binding $parent[Slider].Foreground}" />
+                                </ControlTemplate>
+                            </Thumb.Template>
+                        </Thumb>
+                    </Track>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="TextBox.search">
+        <Setter Property="FontFamily" Value="{StaticResource FontMono}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Background" Value="{DynamicResource Inset}" />
+        <Setter Property="Foreground" Value="{DynamicResource Text}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+
+    <Style Selector="ListBox.libTable, ListBox.libCompact, ListBox.libGrid">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="ListBox.libTable > ListBoxItem, ListBox.libCompact > ListBoxItem">
+        <Setter Property="Padding" Value="20,8" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{DynamicResource RowLine}"
+                        BorderThickness="0,0,0,1"
+                        Padding="{TemplateBinding Padding}">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalContentAlignment="Stretch"
+                                      VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ListBox.libCompact > ListBoxItem">
+        <Setter Property="Padding" Value="20,4" />
+    </Style>
+    <Style Selector="ListBox.libTable > ListBoxItem:pointerover, ListBox.libCompact > ListBoxItem:pointerover">
+        <Setter Property="Background" Value="{DynamicResource Inset}" />
+    </Style>
+    <Style Selector="ListBox.libTable > ListBoxItem:selected, ListBox.libCompact > ListBoxItem:selected">
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+    </Style>
+    <Style Selector="ListBox.libTable > ListBoxItem /template/ ContentPresenter,
+                     ListBox.libTable > ListBoxItem:pointerover /template/ ContentPresenter,
+                     ListBox.libTable > ListBoxItem:selected /template/ ContentPresenter,
+                     ListBox.libTable > ListBoxItem:selected:focus /template/ ContentPresenter,
+                     ListBox.libTable > ListBoxItem:selected:pointerover /template/ ContentPresenter,
+                     ListBox.libTable > ListBoxItem:selected:focus:pointerover /template/ ContentPresenter,
+                     ListBox.libCompact > ListBoxItem /template/ ContentPresenter,
+                     ListBox.libCompact > ListBoxItem:pointerover /template/ ContentPresenter,
+                     ListBox.libCompact > ListBoxItem:selected /template/ ContentPresenter,
+                     ListBox.libCompact > ListBoxItem:selected:focus /template/ ContentPresenter,
+                     ListBox.libCompact > ListBoxItem:selected:pointerover /template/ ContentPresenter,
+                     ListBox.libCompact > ListBoxItem:selected:focus:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.libTable > ListBoxItem:selected TextBlock,
+                     ListBox.libCompact > ListBoxItem:selected TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Text}" />
+    </Style>
+
+    <Style Selector="ListBox.libGrid">
+        <Setter Property="Padding" Value="14,8" />
+    </Style>
+    <Style Selector="ListBox.libGrid > ListBoxItem">
+        <Setter Property="Padding" Value="6" />
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="1"
+                        Padding="{TemplateBinding Padding}">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ListBox.libGrid > ListBoxItem:pointerover">
+        <Setter Property="Background" Value="{DynamicResource Inset}" />
+    </Style>
+    <Style Selector="ListBox.libGrid > ListBoxItem:selected">
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Acc}" />
+    </Style>
+    <Style Selector="ListBox.libGrid > ListBoxItem /template/ ContentPresenter,
+                     ListBox.libGrid > ListBoxItem:pointerover /template/ ContentPresenter,
+                     ListBox.libGrid > ListBoxItem:selected /template/ ContentPresenter,
+                     ListBox.libGrid > ListBoxItem:selected:focus /template/ ContentPresenter,
+                     ListBox.libGrid > ListBoxItem:selected:pointerover /template/ ContentPresenter,
+                     ListBox.libGrid > ListBoxItem:selected:focus:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="FlyoutPresenter">
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderStrong}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Padding" Value="10" />
+        <Setter Property="Foreground" Value="{DynamicResource Text}" />
+    </Style>
+
+    <Style Selector="ContextMenu">
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderStrong}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+    <Style Selector="ContextMenu MenuItem">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource Text}" />
+    </Style>
+    <Style Selector="ContextMenu Separator">
+        <Setter Property="Background" Value="{DynamicResource BorderSoft}" />
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Margin" Value="4,3" />
+    </Style>
+    <Style Selector="ListBox.explorer > ListBoxItem">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource Text}" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="2,0,0,0"
+                        Padding="{TemplateBinding Padding}">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalContentAlignment="Stretch"
+                                      VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ListBox.explorer > ListBoxItem:pointerover">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Acc}" />
+    </Style>
+    <Style Selector="ListBox.explorer > ListBoxItem:selected,
+                     ListBox.explorer > ListBoxItem:selected:focus,
+                     ListBox.explorer > ListBoxItem:selected:pointerover,
+                     ListBox.explorer > ListBoxItem:selected:focus:pointerover">
+        <Setter Property="Background" Value="{DynamicResource Inset}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Acc}" />
+    </Style>
+    <Style Selector="ListBox.explorer > ListBoxItem /template/ ContentPresenter,
+                     ListBox.explorer > ListBoxItem:pointerover /template/ ContentPresenter,
+                     ListBox.explorer > ListBoxItem:selected /template/ ContentPresenter,
+                     ListBox.explorer > ListBoxItem:selected:focus /template/ ContentPresenter,
+                     ListBox.explorer > ListBoxItem:selected:pointerover /template/ ContentPresenter,
+                     ListBox.explorer > ListBoxItem:selected:focus:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.explorer > ListBoxItem TextBlock,
+                     ListBox.explorer > ListBoxItem:pointerover TextBlock,
+                     ListBox.explorer > ListBoxItem:selected TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Text}" />
+    </Style>
+    <Style Selector="ListBox.explorer > ListBoxItem TextBlock.dim,
+                     ListBox.explorer > ListBoxItem:pointerover TextBlock.dim,
+                     ListBox.explorer > ListBoxItem:selected TextBlock.dim">
+        <Setter Property="Foreground" Value="{DynamicResource TextDim}" />
+    </Style>
+</Styles>

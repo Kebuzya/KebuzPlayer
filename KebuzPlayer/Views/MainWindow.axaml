@@ -1,0 +1,272 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:KebuzPlayer.ViewModels"
+        xmlns:c="using:KebuzPlayer.Controls"
+        xmlns:v="using:KebuzPlayer.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="820"
+        x:Class="KebuzPlayer.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/KebuzPlayer_icon.ico"
+        Background="{DynamicResource Bg}"
+        FontFamily="{StaticResource FontMain}"
+        Foreground="{DynamicResource Text}"
+        WindowDecorations="Full"
+        MinWidth="960" MinHeight="640"
+        Title="KebuzPlayer">
+
+    <Panel>
+    <Grid RowDefinitions="34,44,Auto,*,106" IsVisible="{Binding !VizFullscreen}">
+
+        <Border Grid.Row="0"
+                Background="{DynamicResource Surface}"
+                BorderBrush="{DynamicResource BorderSoft}"
+                BorderThickness="0,0,0,1"
+                PointerPressed="TitleBar_PointerPressed">
+            <Grid ColumnDefinitions="Auto,*,Auto" Margin="10,0">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                    <Border Width="16" Height="16"
+                            BorderBrush="{DynamicResource Acc}" BorderThickness="1.5">
+                        <TextBlock Classes="mono" Text="K" FontSize="9" FontWeight="Bold"
+                                   Foreground="{DynamicResource Acc}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Classes="mono" Text="KebuzPlayer" FontSize="13" VerticalAlignment="Center" />
+                    <Border BorderBrush="{DynamicResource BorderSoft}" BorderThickness="1"
+                            Padding="4,1" VerticalAlignment="Center">
+                        <TextBlock Classes="mono dim" Text="{Binding AppVersion}" FontSize="10" />
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Border BorderBrush="{DynamicResource BorderSoft}" BorderThickness="1"
+                            Padding="6,2" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <TextBlock Classes="mono dim" Text="{DynamicResource ThemeUnitTag}" FontSize="10" LetterSpacing="0.7" />
+                    </Border>
+                    <Button Classes="winBtn" Click="Minimize_Click">
+                        <Path Data="M0,0 L10,0 10,1.5 0,1.5 Z" Stretch="None" />
+                    </Button>
+                    <Button Classes="winBtn" Click="Maximize_Click">
+                        <Path Data="M0,0 L9,0 9,9 0,9 Z M1.5,1.5 L7.5,1.5 7.5,7.5 1.5,7.5 Z" Stretch="None" />
+                    </Button>
+                    <Button Classes="winBtn" Click="Close_Click">
+                        <Path Data="M0,1 L1,0 4.5,3.5 8,0 9,1 5.5,4.5 9,8 8,9 4.5,5.5 1,9 0,8 3.5,4.5 Z" Stretch="None" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1"
+                Background="{DynamicResource Bg}"
+                BorderBrush="{DynamicResource BorderSoft}"
+                BorderThickness="0,0,0,1">
+            <ListBox Classes="tabbar"
+                     ItemsSource="{Binding Tabs}"
+                     SelectedItem="{Binding SelectedTab}"
+                     Margin="10,6">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TabDef">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                            <Path Data="{Binding Icon}" Width="18" Height="18" Stretch="None"
+                                  VerticalAlignment="Center" />
+                            <TextBlock Classes="mono" Text="{Binding Title}" FontSize="12"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
+        <Border Grid.Row="2"
+                IsVisible="{Binding Updates.BannerVisible}"
+                Background="{DynamicResource Surface}"
+                BorderBrush="{DynamicResource Acc}"
+                BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="*,Auto,Auto" Margin="16,6">
+                <TextBlock Grid.Column="0" Classes="mono" FontSize="12" VerticalAlignment="Center"
+                           Text="{Binding Updates.UpdateText}" />
+                <Button Grid.Column="1" Classes="ghost" Padding="10,4" Margin="0,0,8,0"
+                        Command="{Binding Updates.OpenPageCommand}">
+                    <TextBlock Text="{DynamicResource Update.OpenPage}" FontSize="12" />
+                </Button>
+                <Button Grid.Column="2" Classes="winBtn" ToolTip.Tip="{DynamicResource Update.Dismiss}"
+                        Command="{Binding Updates.DismissCommand}">
+                    <Path Data="M0,1 L1,0 4.5,3.5 8,0 9,1 5.5,4.5 9,8 8,9 4.5,5.5 1,9 0,8 3.5,4.5 Z" Stretch="None" />
+                </Button>
+            </Grid>
+        </Border>
+
+        <ContentControl Grid.Row="3" Content="{Binding CurrentPage}" />
+
+        <Border Grid.Row="4"
+                Background="{DynamicResource Surface}"
+                BorderBrush="{DynamicResource BorderStrong}"
+                BorderThickness="0,1,0,0">
+            <Grid Margin="16,0" VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" MinWidth="170" MaxWidth="360" />
+                    <ColumnDefinition Width="2.4*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" x:Name="CoverButton" Classes="cover" Margin="0,0,14,0"
+                        Click="Cover_Click">
+                    <Button.Flyout>
+                        <Flyout Placement="TopEdgeAlignedLeft">
+                            <v:CoverPreviewPanel DataContext="{Binding Player.Preview}" />
+                        </Flyout>
+                    </Button.Flyout>
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="{DynamicResource Track.AddToLibrary}" Click="NowPlayingAddToLibrary_Click"
+                                      IsVisible="{Binding !Player.IsTrackInLibrary}" />
+                            <MenuItem Header="{DynamicResource Track.PreviewCover}" Click="NowPlayingPreviewCover_Click"
+                                      IsVisible="{Binding Player.IsTrackInLibrary}" />
+                            <MenuItem Header="{DynamicResource Track.Edit}" Click="NowPlayingEditMetadata_Click" />
+                            <MenuItem Header="{DynamicResource Track.AddToPlaylist}" SubmenuOpened="NowPlayingAddToPlaylist_SubmenuOpened"
+                                      IsVisible="{Binding Player.IsTrackInLibrary}">
+                                <MenuItem Header="…" />
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Header="{DynamicResource Track.Hide}" Click="NowPlayingHideTrack_Click"
+                                      IsVisible="{Binding Player.CanHideTrack}" />
+                            <MenuItem Header="{DynamicResource Track.Unhide}" Click="NowPlayingUnhideTrack_Click"
+                                      IsVisible="{Binding Player.IsTrackHidden}" />
+                            <MenuItem Header="{DynamicResource Track.ShowInFolder}" Click="NowPlayingShowInFolder_Click" />
+                            <Separator />
+                            <MenuItem Header="{DynamicResource Track.DeleteFile}" Click="NowPlayingDeleteTrack_Click" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                    <Border Width="76" Height="76"
+                            Background="{DynamicResource Inset2}"
+                            BorderBrush="{DynamicResource BorderStrong}" BorderThickness="1">
+                        <Panel>
+                            <Image Source="{Binding Player.CoverImage}" Stretch="UniformToFill" />
+                            <TextBlock Classes="mono" Text="GEN" FontSize="8"
+                                       Foreground="{DynamicResource TextA70}"
+                                       IsVisible="{Binding Player.CoverImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                       HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                       Margin="0,0,3,2" />
+                        </Panel>
+                    </Border>
+                </Button>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                    <TextBlock Text="{Binding Player.Title}" FontSize="15"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="mono dim" Text="{Binding Player.Artist}" FontSize="11"
+                               TextTrimming="CharacterEllipsis"
+                               IsVisible="{Binding !Player.HasError}" />
+                    <TextBlock Classes="mono" Text="{Binding Player.ErrorText}" FontSize="11"
+                               Foreground="{DynamicResource Acc}"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding Player.ErrorText}"
+                               IsVisible="{Binding Player.HasError}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="2" Margin="16,0">
+                    <c:KebuzSlider Classes="thin progress"
+                            Minimum="0"
+                            Maximum="{Binding Player.DurationSeconds}"
+                            Value="{Binding Player.PositionSeconds}" />
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <TextBlock Grid.Column="0" Classes="mono dim"
+                                   Text="{Binding Player.PositionText}" FontSize="11" />
+                        <TextBlock Grid.Column="2" Classes="mono dim"
+                                   Text="{Binding Player.DurationText}" FontSize="11" />
+                    </Grid>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Classes="ctrl" Command="{Binding Player.PreviousCommand}">
+                        <Path Data="M8,0 L8,10 1,5 Z M0,0 L1.5,0 1.5,10 0,10 Z" Stretch="None" />
+                    </Button>
+                    <Button Classes="play" Command="{Binding Player.PlayPauseCommand}">
+                        <Panel>
+                            <Path Data="M0,0 L10,6 0,12 Z" Stretch="None"
+                                  IsVisible="{Binding !Player.IsPlaying}" />
+                            <Path Data="M0,0 L3,0 3,12 0,12 Z M6,0 L9,0 9,12 6,12 Z" Stretch="None"
+                                  IsVisible="{Binding Player.IsPlaying}" />
+                        </Panel>
+                    </Button>
+                    <Button Classes="ctrl" Command="{Binding Player.NextCommand}">
+                        <Path Data="M0,0 L0,10 7,5 Z M6.5,0 L8,0 8,10 6.5,10 Z" Stretch="None" />
+                    </Button>
+                    <Button Classes="ctrl" Width="24" Height="24"
+                            Classes.active="{Binding Player.RepeatActive}"
+                            Command="{Binding Player.CycleRepeatCommand}">
+                        <Panel Width="16" Height="16">
+                            <Path Classes="stroke" Stretch="None"
+                                  Data="M10.6,3.1 A5.2,5.2 0 1 1 2.9,7.1" />
+                            <Path Stretch="None" Data="M9.4,0.2 L14.6,2.9 10,5.9 Z" />
+                            <TextBlock Classes="mono" Text="1" FontSize="7" FontWeight="Bold"
+                                       IsVisible="{Binding Player.RepeatIsOne}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Margin="0,3,0,0" />
+                        </Panel>
+                    </Button>
+                    <Button Classes="ctrl" Width="24" Height="24"
+                            Classes.active="{Binding Player.ShuffleActive}"
+                            Command="{Binding Player.ToggleShuffleCommand}">
+                        <Panel Width="17" Height="16">
+                            <Path Classes="stroke" Stretch="None"
+                                  Data="M0,4.2 L4.5,4.2 10.5,11.8 13.5,11.8 M0,11.8 L4.5,11.8 10.5,4.2 13.5,4.2" />
+                            <Path Stretch="None"
+                                  Data="M12.6,9.4 L17,11.8 12.6,14.2 Z M12.6,1.8 L17,4.2 12.6,6.6 Z" />
+                        </Panel>
+                    </Button>
+                </StackPanel>
+
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center" Margin="16,0,0,0">
+                    <c:KebuzSlider Classes="thin" Width="100"
+                            Foreground="{DynamicResource Acc2}"
+                            Minimum="0" Maximum="100"
+                            Value="{Binding Player.VolumePercent}" />
+                    <TextBlock Classes="mono dim" FontSize="11" Width="38"
+                               Text="{Binding Player.VolumePercent, StringFormat='{}{0}%'}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="6"
+                            VerticalAlignment="Center" Margin="10,0,0,0"
+                            Background="Transparent"
+                            PointerWheelChanged="Gain_PointerWheelChanged">
+                    <Button Classes="ctrl" Width="22" Height="22"
+                            Command="{Binding Player.GainDownCommand}">
+                        <TextBlock Classes="mono dim" Text="-" FontSize="12" />
+                    </Button>
+                    <TextBlock Classes="mono" Text="{Binding Player.GainText}" FontSize="11"
+                               Foreground="{DynamicResource Acc}" VerticalAlignment="Center" />
+                    <Button Classes="ctrl" Width="22" Height="22"
+                            Command="{Binding Player.GainUpCommand}">
+                        <TextBlock Classes="mono dim" Text="+" FontSize="12" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+
+    <Panel x:Name="VizFullscreenLayer" IsVisible="{Binding VizFullscreen}"
+           Background="{DynamicResource Bg}" DoubleTapped="VizFullscreen_DoubleTapped"
+           PointerMoved="VizFullscreen_PointerMoved">
+        <c:VisualizerPanel Placement="Tab" Margin="0" />
+        <Border x:Name="VizHintBox"
+                HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,40"
+                Background="{DynamicResource InsetA70}"
+                BorderBrush="{DynamicResource BorderSoft}" BorderThickness="1"
+                Padding="14,7" Opacity="1">
+            <Border.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.4" />
+                </Transitions>
+            </Border.Transitions>
+            <TextBlock Classes="mono dim" FontSize="12" Text="{DynamicResource Viz.EscHint}" />
+        </Border>
+    </Panel>
+    </Panel>
+</Window>

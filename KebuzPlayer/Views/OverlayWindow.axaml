@@ -1,0 +1,168 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:KebuzPlayer.ViewModels"
+        xmlns:c="using:KebuzPlayer.Controls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="220"
+        x:Class="KebuzPlayer.Views.OverlayWindow"
+        x:DataType="vm:OverlayViewModel"
+        Classes.vivid="{Binding IsVivid}"
+        Classes.modest="{Binding !IsVivid}"
+        WindowDecorations="None"
+        ShowInTaskbar="False"
+        CanResize="False"
+        Topmost="True"
+        ShowActivated="False"
+        SizeToContent="Height"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        FontFamily="{StaticResource FontMain}"
+        Foreground="{DynamicResource Text}">
+
+    <Panel>
+        <Border x:Name="Root" Classes="overlayCard"
+                Classes.vivid="{Binding IsVivid}"
+                Classes.modest="{Binding !IsVivid}">
+            <Panel>
+                <Grid RowDefinitions="Auto,Auto,Auto" Margin="12,10,12,0">
+
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+                        <Border Grid.Column="0" Classes="ovCover"
+                                Classes.vivid="{Binding IsVivid}"
+                                Classes.modest="{Binding !IsVivid}"
+                                Background="{DynamicResource Inset2}"
+                                BorderBrush="{DynamicResource BorderStrong}" BorderThickness="1"
+                                VerticalAlignment="Center">
+                            <Image Source="{Binding Player.CoverImage}" Stretch="UniformToFill" />
+                        </Border>
+
+                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="{Binding Player.Title}" FontSize="14" FontWeight="SemiBold"
+                                       TextTrimming="CharacterEllipsis" Margin="0,0,40,0" />
+                            <TextBlock Classes="mono dim" Text="{Binding Player.Artist}" FontSize="11"
+                                       TextTrimming="CharacterEllipsis" />
+
+                            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,4,0,0">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <Button Classes="ctrl" Width="24" Height="24" Command="{Binding Player.PreviousCommand}">
+                                        <Path Data="M8,0 L8,10 1,5 Z M0,0 L1.5,0 1.5,10 0,10 Z" Stretch="None" />
+                                    </Button>
+                                    <Button Classes="play" Width="26" Height="26" Command="{Binding Player.PlayPauseCommand}">
+                                        <Panel>
+                                            <Path Data="M0,0 L10,6 0,12 Z" Stretch="None"
+                                                  IsVisible="{Binding !Player.IsPlaying}" />
+                                            <Path Data="M0,0 L3,0 3,12 0,12 Z M6,0 L9,0 9,12 6,12 Z" Stretch="None"
+                                                  IsVisible="{Binding Player.IsPlaying}" />
+                                        </Panel>
+                                    </Button>
+                                    <Button Classes="ctrl" Width="24" Height="24" Command="{Binding Player.NextCommand}">
+                                        <Path Data="M0,0 L0,10 7,5 Z M6.5,0 L8,0 8,10 6.5,10 Z" Stretch="None" />
+                                    </Button>
+
+                                    <Border Width="1" Height="14" Background="{DynamicResource BorderA60}" Margin="4,0" />
+
+                                    <Border Background="Transparent" Padding="2,5" VerticalAlignment="Center"
+                                            PointerWheelChanged="Volume_PointerWheelChanged">
+                                        <TextBlock Classes="mono dim" FontSize="11"
+                                                   Text="{Binding Player.VolumePercent, StringFormat='{}{0}%'}"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                </StackPanel>
+
+                                <Border Grid.Column="2" Background="Transparent" Padding="2,5"
+                                        VerticalAlignment="Center" Margin="8,0,0,0"
+                                        PointerWheelChanged="Gain_PointerWheelChanged">
+                                    <TextBlock Classes="mono" FontSize="11"
+                                               Classes.dim="{Binding !IsVivid}"
+                                               Classes.ovAccent="{Binding IsVivid}"
+                                               Text="{Binding Player.GainText}"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Grid.Row="1" Spacing="1" Margin="0,6,0,7">
+                        <c:KebuzSlider Classes="thin"
+                                Minimum="0" Maximum="{Binding Player.DurationSeconds}"
+                                Value="{Binding Player.PositionSeconds}" />
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <TextBlock Grid.Column="0" Classes="mono dim" Text="{Binding Player.PositionText}" FontSize="11" />
+                            <TextBlock Grid.Column="2" Classes="mono dim" Text="{Binding Player.DurationText}" FontSize="11" />
+                        </Grid>
+                    </StackPanel>
+
+                    <Border Grid.Row="2" Classes="overlayViz" Margin="-12,0,-12,0" Padding="12,5,12,6"
+                            Classes.vivid="{Binding IsVivid}"
+                            Classes.modest="{Binding !IsVivid}"
+                            IsVisible="{Binding ShowVisualizer}">
+                        <Panel>
+                            <StackPanel Spacing="3">
+                                <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsVivid}">
+                                    <Ellipse Width="5" Height="5" Fill="{DynamicResource Acc}" VerticalAlignment="Center" />
+                                    <TextBlock Classes="mono" Text="LIVE" FontSize="10" LetterSpacing="0.8"
+                                               Foreground="{DynamicResource Acc}" />
+                                </StackPanel>
+                                <c:VisualizerPanel Placement="Overlay" />
+                            </StackPanel>
+                            <Border Width="10" Height="10" Margin="-7,-3,0,0"
+                                    BorderBrush="{DynamicResource Acc}" BorderThickness="2,2,0,0"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                                    IsVisible="{Binding IsVivid}" />
+                            <Border Width="10" Height="10" Margin="0,0,-7,-4"
+                                    BorderBrush="{DynamicResource Acc}" BorderThickness="0,0,2,2"
+                                    HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                    IsVisible="{Binding IsVivid}" />
+                        </Panel>
+                    </Border>
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" Spacing="2"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,9,10,0"
+                            IsVisible="{Binding !IsVivid}">
+                    <Button Classes="iconBtn" Width="20" Height="20"
+                            Classes.active="{Binding IsPinned}"
+                            Command="{Binding TogglePinCommand}">
+                        <Panel Width="8" Height="10">
+                            <Ellipse Classes="pinGlyph" Width="6" Height="6"
+                                     HorizontalAlignment="Left" VerticalAlignment="Top" />
+                            <Rectangle Classes="pinGlyph" Width="1" Height="5"
+                                       HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+                        </Panel>
+                    </Button>
+                    <Button Classes="iconBtn" Width="20" Height="20"
+                            Command="{Binding CloseCommand}">
+                        <Path Data="M0,1 L1,0 4.5,3.5 8,0 9,1 5.5,4.5 9,8 8,9 4.5,5.5 1,9 0,8 3.5,4.5 Z" Stretch="None" />
+                    </Button>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Spacing="6"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,10,0"
+                            IsVisible="{Binding IsVivid}">
+                    <Button Classes="winBtn" Width="16" Height="12"
+                            Classes.active="{Binding IsPinned}"
+                            Command="{Binding TogglePinCommand}">
+                        <Panel Width="7" Height="8">
+                            <Ellipse Classes="pinGlyph" Width="5" Height="5"
+                                     HorizontalAlignment="Left" VerticalAlignment="Top" />
+                            <Rectangle Classes="pinGlyph" Width="1" Height="4"
+                                       HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+                        </Panel>
+                    </Button>
+                    <Button Classes="winBtn" Width="16" Height="12"
+                            Command="{Binding CloseCommand}">
+                        <Path Data="M0,1 L1,0 4.5,3.5 8,0 9,1 5.5,4.5 9,8 8,9 4.5,5.5 1,9 0,8 3.5,4.5 Z" Stretch="None" />
+                    </Button>
+                </StackPanel>
+            </Panel>
+        </Border>
+
+        <Border Classes="overlayTag" IsVisible="{Binding IsVivid}"
+                HorizontalAlignment="Left" VerticalAlignment="Top"
+                Margin="26,0,0,0">
+            <TextBlock Classes="mono" Text="OVERLAY - LIVE" FontSize="10" LetterSpacing="0.8"
+                       Foreground="{DynamicResource TextFaint}" />
+        </Border>
+    </Panel>
+</Window>

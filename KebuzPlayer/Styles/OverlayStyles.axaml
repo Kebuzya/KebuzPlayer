@@ -1,0 +1,108 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:KebuzPlayer.Controls">
+
+    <Style Selector="Window.modest">
+        <Setter Property="Width" Value="360" />
+    </Style>
+    <Style Selector="Window.vivid">
+        <Setter Property="Width" Value="370" />
+    </Style>
+
+    <Style Selector="Border.overlayCard">
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Border.overlayCard.modest">
+        <Setter Property="Background" Value="{DynamicResource InsetA70}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderA60}" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="Border.overlayCard.vivid">
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderStrong}" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="Margin" Value="0,9,0,0" />
+    </Style>
+
+    <Style Selector="Border.overlayCard.modest TextBlock">
+        <Setter Property="Effect" Value="drop-shadow(0 1 2 #A6000000)" />
+    </Style>
+    <Style Selector="Border.overlayCard.modest TextBlock.dim">
+        <Setter Property="Foreground" Value="{DynamicResource Text}" />
+    </Style>
+
+    <Style Selector="Border.overlayCard.modest Button.play">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+    </Style>
+    <Style Selector="Border.overlayCard.modest Button.play Path">
+        <Setter Property="Fill" Value="{DynamicResource TextDim}" />
+    </Style>
+
+    <Style Selector="Border.ovCover.modest">
+        <Setter Property="Width" Value="62" />
+        <Setter Property="Height" Value="62" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+    <Style Selector="Border.ovCover.vivid">
+        <Setter Property="Width" Value="62" />
+        <Setter Property="Height" Value="62" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="RenderTransform" Value="rotate(-1deg)" />
+    </Style>
+
+    <Style Selector="Button.iconBtn">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.iconBtn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Inset}" />
+    </Style>
+    <Style Selector="Button.iconBtn > Path">
+        <Setter Property="Fill" Value="{DynamicResource Text}" />
+        <Setter Property="Opacity" Value="0.4" />
+    </Style>
+    <Style Selector="Button.iconBtn:pointerover > Path">
+        <Setter Property="Opacity" Value="0.85" />
+    </Style>
+
+    <Style Selector="Button Ellipse.pinGlyph, Button Rectangle.pinGlyph">
+        <Setter Property="Fill" Value="{DynamicResource TextFaint}" />
+    </Style>
+    <Style Selector="Button.active Ellipse.pinGlyph, Button.active Rectangle.pinGlyph">
+        <Setter Property="Fill" Value="{DynamicResource Acc}" />
+    </Style>
+
+    <Style Selector="Border.overlayViz.modest">
+        <Setter Property="Background" Value="{DynamicResource Inset2}" />
+        <Setter Property="CornerRadius" Value="0,0,14,14" />
+    </Style>
+    <Style Selector="Border.overlayViz.vivid">
+        <Setter Property="Background" Value="{DynamicResource Inset2}" />
+    </Style>
+
+    <Style Selector="Border.overlayViz.modest c|VisualizerPanel">
+        <Setter Property="AccentBrush" Value="{DynamicResource Acc2}" />
+        <Setter Property="Height" Value="12" />
+    </Style>
+    <Style Selector="Border.overlayViz.vivid c|VisualizerPanel">
+        <Setter Property="AccentBrush" Value="{DynamicResource Acc}" />
+        <Setter Property="Height" Value="16" />
+    </Style>
+
+    <Style Selector="TextBlock.ovAccent">
+        <Setter Property="Foreground" Value="{DynamicResource Acc}" />
+    </Style>
+
+    <Style Selector="Border.overlayTag">
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSoft}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="6,1" />
+    </Style>
+</Styles>

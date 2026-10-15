@@ -1,0 +1,47 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <x:String x:Key="ThemeUnitTag">PANE — LIGHT/04</x:String>
+    <x:String x:Key="ThemeDisplayName">Vellum Blue</x:String>
+
+    <Color x:Key="BgColor">#FFD5E0E6</Color>
+    <Color x:Key="SurfaceColor">#FFBBCAD2</Color>
+    <Color x:Key="InsetColor">#FFBFCDD4</Color>
+    <Color x:Key="Inset2Color">#FF000305</Color>
+    <Color x:Key="BorderStrongColor">#FF637883</Color>
+    <Color x:Key="BorderSoftColor">#FF9AA7AE</Color>
+    <Color x:Key="RowLineColor">#FFAFBDC4</Color>
+    <Color x:Key="TextColor">#FF121C23</Color>
+    <Color x:Key="TextDimColor">#FF3E4A51</Color>
+    <Color x:Key="TextFaintColor">#FF69777E</Color>
+    <Color x:Key="AccColor">#FF0065B0</Color>
+    <Color x:Key="Acc2Color">#FFC9690C</Color>
+    <Color x:Key="BorderStrongA55Color">#8C637883</Color>
+    <Color x:Key="InsetA55Color">#8CBFCDD4</Color>
+    <Color x:Key="InsetA70Color">#B2BFCDD4</Color>
+    <Color x:Key="BorderA60Color">#99637883</Color>
+    <Color x:Key="TextA75Color">#BF121C23</Color>
+    <Color x:Key="TextA70Color">#B2121C23</Color>
+    <Color x:Key="AccA20Color">#330065B0</Color>
+    <Color x:Key="AccA15Color">#260065B0</Color>
+
+    <SolidColorBrush x:Key="Bg" Color="{StaticResource BgColor}" />
+    <SolidColorBrush x:Key="Surface" Color="{StaticResource SurfaceColor}" />
+    <SolidColorBrush x:Key="Inset" Color="{StaticResource InsetColor}" />
+    <SolidColorBrush x:Key="Inset2" Color="{StaticResource Inset2Color}" />
+    <SolidColorBrush x:Key="BorderStrong" Color="{StaticResource BorderStrongColor}" />
+    <SolidColorBrush x:Key="BorderSoft" Color="{StaticResource BorderSoftColor}" />
+    <SolidColorBrush x:Key="RowLine" Color="{StaticResource RowLineColor}" />
+    <SolidColorBrush x:Key="Text" Color="{StaticResource TextColor}" />
+    <SolidColorBrush x:Key="TextDim" Color="{StaticResource TextDimColor}" />
+    <SolidColorBrush x:Key="TextFaint" Color="{StaticResource TextFaintColor}" />
+    <SolidColorBrush x:Key="Acc" Color="{StaticResource AccColor}" />
+    <SolidColorBrush x:Key="Acc2" Color="{StaticResource Acc2Color}" />
+    <SolidColorBrush x:Key="BorderStrongA55" Color="{StaticResource BorderStrongA55Color}" />
+    <SolidColorBrush x:Key="InsetA55" Color="{StaticResource InsetA55Color}" />
+    <SolidColorBrush x:Key="InsetA70" Color="{StaticResource InsetA70Color}" />
+    <SolidColorBrush x:Key="BorderA60" Color="{StaticResource BorderA60Color}" />
+    <SolidColorBrush x:Key="TextA75" Color="{StaticResource TextA75Color}" />
+    <SolidColorBrush x:Key="TextA70" Color="{StaticResource TextA70Color}" />
+    <SolidColorBrush x:Key="AccA20" Color="{StaticResource AccA20Color}" />
+    <SolidColorBrush x:Key="AccA15" Color="{StaticResource AccA15Color}" />
+</ResourceDictionary>

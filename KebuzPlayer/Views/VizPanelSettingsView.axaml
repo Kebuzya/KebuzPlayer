@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KebuzPlayer.ViewModels"
+             xmlns:c="using:KebuzPlayer.Controls"
+             x:Class="KebuzPlayer.Views.VizPanelSettingsView"
+             x:DataType="vm:VizPanelSettingsViewModel">
+    <StackPanel Spacing="6">
+        <Button Classes="ghost" HorizontalAlignment="Left" Padding="8,4"
+                Command="{Binding ToggleExpandedCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Classes="mono" Text="{Binding ExpandGlyph}" FontSize="12"
+                           Foreground="{DynamicResource Acc2}" />
+                <TextBlock Classes="mono" Text="{Binding Title}" FontSize="12"
+                           Foreground="{DynamicResource Acc2}" />
+            </StackPanel>
+        </Button>
+        <StackPanel Spacing="6" IsVisible="{Binding IsExpanded}">
+        <CheckBox IsChecked="{Binding Enabled}"
+                  FontFamily="{StaticResource FontMono}" FontSize="12">
+            <TextBlock Text="{DynamicResource VizPanel.Enabled}" />
+        </CheckBox>
+        <StackPanel Spacing="6" IsEnabled="{Binding Enabled}">
+            <TextBlock Classes="mono dim" Text="{DynamicResource VizPanel.Style}" FontSize="11" />
+            <c:KebuzComboBox Width="220" HorizontalAlignment="Left"
+                      FontFamily="{StaticResource FontMono}" FontSize="13"
+                      ItemsSource="{Binding StyleOptions}"
+                      SelectedItem="{Binding SelectedStyle}">
+                <c:KebuzComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:VizStyleOption">
+                        <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                </c:KebuzComboBox.ItemTemplate>
+            </c:KebuzComboBox>
+            <TextBlock Classes="mono dim" Text="{DynamicResource VizPanel.Color}" FontSize="11" />
+            <c:KebuzComboBox Width="220" HorizontalAlignment="Left"
+                      FontFamily="{StaticResource FontMono}" FontSize="13"
+                      ItemsSource="{Binding ColorModeOptions}"
+                      SelectedItem="{Binding SelectedColorMode}">
+                <c:KebuzComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:VizColorModeOption">
+                        <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                </c:KebuzComboBox.ItemTemplate>
+            </c:KebuzComboBox>
+            <DockPanel Width="220" HorizontalAlignment="Left">
+                <TextBlock Classes="mono dim" Text="{DynamicResource VizPanel.Intensity}" FontSize="11" DockPanel.Dock="Left"
+                           VerticalAlignment="Center" />
+                <TextBlock Classes="mono dim" FontSize="11" DockPanel.Dock="Right"
+                           VerticalAlignment="Center" Text="{Binding IntensityPercent, StringFormat={}{0}%}" />
+                <Panel />
+            </DockPanel>
+            <c:KebuzSlider Classes="thin" Width="220" HorizontalAlignment="Left"
+                           Minimum="0" Maximum="100"
+                           Value="{Binding IntensityPercent}" />
+            <CheckBox IsChecked="{Binding ShowPeakRunners}" IsEnabled="{Binding PeaksSupported}"
+                      FontFamily="{StaticResource FontMono}" FontSize="12">
+                <TextBlock Text="{DynamicResource VizPanel.Peaks}" />
+            </CheckBox>
+            <StackPanel Spacing="6" IsVisible="{Binding BarCountSupported}">
+                <TextBlock Classes="mono dim" Text="{DynamicResource VizPanel.BarCount}" FontSize="11" />
+                <c:KebuzComboBox Width="220" HorizontalAlignment="Left"
+                          FontFamily="{StaticResource FontMono}" FontSize="13"
+                          ItemsSource="{Binding BarCountOptions}"
+                          SelectedItem="{Binding SelectedBarCount}" />
+            </StackPanel>
+        </StackPanel>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

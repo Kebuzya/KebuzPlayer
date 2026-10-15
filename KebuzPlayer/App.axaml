@@ -1,0 +1,22 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="KebuzPlayer.App"
+             xmlns:local="using:KebuzPlayer"
+             RequestedThemeVariant="Dark">
+
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <FontFamily x:Key="FontMono">avares://KebuzPlayer/Assets/Fonts#IBM Plex Mono, Consolas, Segoe UI Symbol</FontFamily>
+        <FontFamily x:Key="FontMain">avares://KebuzPlayer/Assets/Fonts#Archivo, Segoe UI</FontFamily>
+    </Application.Resources>
+
+    <Application.Styles>
+        <SimpleTheme />
+        <StyleInclude Source="avares://KebuzPlayer/Styles/AppStyles.axaml" />
+        <StyleInclude Source="avares://KebuzPlayer/Styles/OverlayStyles.axaml" />
+        <StyleInclude Source="avares://KebuzPlayer/Styles/VisualizerStyles.axaml" />
+    </Application.Styles>
+</Application>

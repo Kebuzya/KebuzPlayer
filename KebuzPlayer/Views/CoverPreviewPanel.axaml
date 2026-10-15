@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KebuzPlayer.ViewModels"
+             x:Class="KebuzPlayer.Views.CoverPreviewPanel"
+             x:DataType="vm:CoverPreviewViewModel">
+    <UserControl.Styles>
+        <Style Selector="Border.variantCell">
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Border.variantCell.selected">
+            <Setter Property="BorderBrush" Value="{DynamicResource Acc}" />
+        </Style>
+    </UserControl.Styles>
+    <StackPanel Spacing="10" Width="312">
+        <Border Width="312" Height="312"
+                Background="{DynamicResource Inset2}"
+                BorderBrush="{DynamicResource BorderStrong}" BorderThickness="1">
+            <Panel>
+                <Image Source="{Binding PreviewImage}" Stretch="UniformToFill"
+                       IsVisible="{Binding !IsGridVisible}" />
+                <ItemsControl ItemsSource="{Binding Variants}"
+                              IsVisible="{Binding IsGridVisible}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel MaxWidth="310" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CoverVariantItem">
+                            <Border Classes="variantCell"
+                                    Classes.selected="{Binding IsSelected}"
+                                    Width="{Binding CellSize}" Height="{Binding CellSize}"
+                                    Background="Transparent"
+                                    PointerPressed="Variant_PointerPressed">
+                                <Image Source="{Binding Image}" Stretch="UniformToFill" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Panel>
+        </Border>
+        <TextBlock Classes="mono dim" FontSize="10" LetterSpacing="0.8"
+                   Text="{Binding PreviewHint}" />
+        <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+            <Button Grid.Column="0" Classes="ghost" Content="←"
+                    ToolTip.Tip="{DynamicResource Cover.Prev}"
+                    Command="{Binding PreviousVariantCommand}" />
+            <Button Grid.Column="1" Classes="ghost" Content="→" Margin="8,0,0,0"
+                    ToolTip.Tip="{DynamicResource Cover.Next}"
+                    Command="{Binding RegenerateVariantCommand}" />
+            <Button Grid.Column="2" Classes="ghost" Content="{DynamicResource Cover.Original}" Margin="8,0,0,0"
+                    HorizontalAlignment="Left"
+                    ToolTip.Tip="{DynamicResource Cover.OriginalTip}"
+                    Command="{Binding ShowOriginalCommand}" />
+            <Button Grid.Column="3" Classes="primary" Content="{DynamicResource Common.Save}"
+                    Command="{Binding SaveCommand}" />
+        </Grid>
+    </StackPanel>
+</UserControl>

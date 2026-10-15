@@ -1,0 +1,513 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KebuzPlayer.ViewModels"
+             xmlns:c="using:KebuzPlayer.Controls"
+             xmlns:home="using:KebuzPlayer.Home"
+             x:Class="KebuzPlayer.Views.HomeView"
+             x:DataType="vm:HomeViewModel">
+    <UserControl.Styles>
+        <Style Selector="Border.widgetTile">
+            <Setter Property="Background" Value="{DynamicResource Surface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongA55}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="Border.widgetTile:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderStrong}" />
+        </Style>
+        <Style Selector="Border.menuRow">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Border.menuRow:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Inset}" />
+        </Style>
+        <Style Selector="Border#DropGhost">
+            <Setter Property="BorderBrush" Value="{DynamicResource TextFaint}" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Border#DropGhost.valid">
+            <Setter Property="BorderBrush" Value="{DynamicResource Acc}" />
+            <Setter Property="Background" Value="{DynamicResource AccA15}" />
+        </Style>
+        <Style Selector="ListBox.widgetList">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        </Style>
+        <Style Selector="ListBox.widgetList > ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,1" />
+            <Setter Property="MinHeight" Value="0" />
+        </Style>
+        <Style Selector="ListBox.widgetList > ListBoxItem /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.rowPlay">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.rowPlay > Path">
+            <Setter Property="Fill" Value="{DynamicResource TextDim}" />
+        </Style>
+        <Style Selector="Button.rowPlay:pointerover > Path">
+            <Setter Property="Fill" Value="{DynamicResource Acc}" />
+        </Style>
+        <Style Selector="Button.rowPlay:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.rowPlay:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.centerPlay">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.widgetTile:pointerover Button.centerPlay">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button.centerPlay:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.centerPlay:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.coverPlay">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="Button.coverPlay /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Panel.playBadge">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.widgetTile:pointerover Panel.playBadge">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="WidgetTrackRowTemplate" x:DataType="vm:TrackRow">
+            <Grid ColumnDefinitions="28,*" Background="Transparent">
+                <Border Width="28" Height="28" Background="{DynamicResource Inset2}"
+                        BorderBrush="{DynamicResource BorderSoft}" BorderThickness="1">
+                    <Panel>
+                        <TextBlock Classes="mono" Text="♪" FontSize="12"
+                                   Foreground="{DynamicResource TextFaint}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Image Source="{Binding Thumb}" Stretch="UniformToFill" />
+                    </Panel>
+                </Border>
+                <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Track.Title}" FontSize="12"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="mono dim" Text="{Binding Track.Artist}" FontSize="10"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto" Margin="20,14">
+            <Border Grid.Column="0" Width="6" Height="6" Background="{DynamicResource Acc}"
+                    VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Classes="sectionTitle" Text="{DynamicResource Home.Title}"
+                       Margin="8,0,10,0" VerticalAlignment="Center" />
+            <Rectangle Grid.Column="2" Height="1" Fill="{DynamicResource BorderSoft}"
+                       VerticalAlignment="Center" Margin="0,0,14,0" />
+            <Button Grid.Column="3" x:Name="AddWidgetButton" Classes="primary" Content="{DynamicResource Home.AddWidget}">
+                <Button.Flyout>
+                    <Flyout Placement="BottomEdgeAlignedRight">
+                        <StackPanel Width="238">
+                            <Grid ColumnDefinitions="Auto,Auto,*" Margin="10,4,10,8">
+                                <Border Width="5" Height="5" Background="{DynamicResource Acc}"
+                                        VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" x:Name="CatalogTitle" Classes="mono dim"
+                                           Text="{DynamicResource Home.Widgets}" FontSize="10" LetterSpacing="1"
+                                           Margin="7,0,8,0" VerticalAlignment="Center" />
+                                <Rectangle Grid.Column="2" Height="1" Fill="{DynamicResource BorderSoft}"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+                            <StackPanel x:Name="TypesPanel">
+                                <ItemsControl ItemsSource="{Binding CatalogEntries}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="home:WidgetCatalogEntry">
+                                            <Border Classes="menuRow" Tapped="CatalogEntry_Tapped">
+                                                <Grid ColumnDefinitions="24,*,Auto">
+                                                    <Path Data="{Binding Icon}" Fill="{DynamicResource TextDim}"
+                                                          Width="16" Height="16" Stretch="Uniform"
+                                                          VerticalAlignment="Center" />
+                                                    <StackPanel Grid.Column="1" Margin="8,0,0,0" Spacing="2">
+                                                        <TextBlock Text="{Binding DisplayName}" FontSize="13" />
+                                                        <TextBlock Classes="mono faint" Text="{Binding Description}"
+                                                                   FontSize="9" />
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Classes="mono dim" Text="›"
+                                                               FontSize="14" VerticalAlignment="Center" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                            <StackPanel x:Name="SizesPanel" IsVisible="False">
+                                <Border Classes="menuRow" Tapped="BackToTypes_Tapped">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Classes="mono dim" Text="←" FontSize="12"
+                                                   VerticalAlignment="Center" />
+                                        <TextBlock Classes="mono dim" Text="{DynamicResource Home.Back}" FontSize="10"
+                                                   LetterSpacing="1" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                                <ItemsControl x:Name="SizesList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="home:WidgetSize">
+                                            <Border Classes="menuRow" Tapped="AddSize_Tapped">
+                                                <Grid ColumnDefinitions="48,*">
+                                                    <Border Width="{Binding PreviewWidth}"
+                                                            Height="{Binding PreviewHeight}"
+                                                            Background="{DynamicResource AccA15}"
+                                                            BorderBrush="{DynamicResource Acc}" BorderThickness="1"
+                                                            HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="1" Classes="mono" Text="{Binding Label}"
+                                                               FontSize="12" VerticalAlignment="Center" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                            <StackPanel x:Name="PlaylistsPanel" IsVisible="False">
+                                <Border Classes="menuRow" Tapped="BackToSizes_Tapped">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Classes="mono dim" Text="←" FontSize="12"
+                                                   VerticalAlignment="Center" />
+                                        <TextBlock Classes="mono dim" Text="{DynamicResource Home.Playlist}" FontSize="10"
+                                                   LetterSpacing="1" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                                <TextBlock Classes="mono faint" Text="{DynamicResource Home.NoPlaylists}" FontSize="9"
+                                           LetterSpacing="1" Margin="10,6" IsVisible="{Binding !Playlists.Count}" />
+                                <ScrollViewer MaxHeight="260">
+                                    <ItemsControl ItemsSource="{Binding Playlists}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:PlaylistPick">
+                                                <Border Classes="menuRow" Tapped="PlaylistPick_Tapped">
+                                                    <TextBlock Text="{Binding Name}" FontSize="13"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </StackPanel>
+                        </StackPanel>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+        </Grid>
+
+        <Panel Grid.Row="1" x:Name="GridHost" ClipToBounds="True">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8"
+                        IsVisible="{Binding !Widgets.Count}">
+                <TextBlock Classes="mono dim" Text="{DynamicResource Home.Empty}" FontSize="12"
+                           HorizontalAlignment="Center" />
+                <TextBlock Classes="mono faint" Text="{DynamicResource Home.EmptyHint}" FontSize="10"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+            <ScrollViewer x:Name="GridScroll" VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl x:Name="WidgetsList" ItemsSource="{Binding Widgets}" Margin="20,10">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <c:WidgetGridPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:HomeWidgetViewModel">
+                            <Border Classes="widgetTile">
+                                <Grid RowDefinitions="Auto,*" Margin="12,10">
+                                    <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                                        <Path Data="{Binding Icon}" Fill="{DynamicResource Acc}"
+                                              Width="13" Height="13" Stretch="Uniform"
+                                              VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Classes="mono dim" Text="{Binding TitleCaps}"
+                                                   FontSize="10" LetterSpacing="1" Margin="7,0,0,0"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        <Rectangle Grid.Column="2" Height="1" Fill="{DynamicResource BorderSoft}"
+                                                   Margin="8,0" VerticalAlignment="Center" />
+                                        <Border Grid.Column="3" BorderBrush="{DynamicResource BorderSoft}"
+                                                BorderThickness="1" Padding="4,1" VerticalAlignment="Center">
+                                            <TextBlock Classes="mono faint" Text="{Binding SizeLabel}" FontSize="9" />
+                                        </Border>
+                                    </Grid>
+                                    <Panel Grid.Row="1" Margin="0,8,0,0">
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                    Spacing="9"
+                                                    IsVisible="{Binding ShowPlaceholder}">
+                                            <Path Data="{Binding Icon}" Fill="{DynamicResource TextFaint}"
+                                                  Width="24" Height="24" Stretch="Uniform"
+                                                  HorizontalAlignment="Center" />
+                                            <TextBlock Classes="mono faint" Text="{DynamicResource Home.Soon}" FontSize="9"
+                                                       LetterSpacing="1.5" HorizontalAlignment="Center" />
+                                        </StackPanel>
+                                        <Panel IsVisible="{Binding IsVisualizer}">
+                                            <c:VisualizerPanel Placement="HomeWidget"
+                                                               FormFactorOverride="{Binding VizFormFactor}"
+                                                               SettingsOverride="{Binding OwnViz}"
+                                                               IsVisible="{Binding VizEnabled}" />
+                                            <TextBlock Classes="mono faint" Text="{DynamicResource Home.Disabled}" FontSize="9"
+                                                       LetterSpacing="1.5" HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding !VizEnabled}" />
+                                        </Panel>
+                                        <ContentControl Content="{Binding Content}"
+                                                        IsVisible="{Binding Content, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                            <ContentControl.DataTemplates>
+                                                <DataTemplate x:DataType="vm:RecentWidgetContent">
+                                                    <Panel>
+                                                        <TextBlock Classes="mono faint" Text="{DynamicResource Home.NoHistory}" FontSize="9"
+                                                                   LetterSpacing="1" HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding IsEmpty}" />
+                                                        <ListBox Classes="widgetList" ItemsSource="{Binding Tracks}"
+                                                                 ItemTemplate="{StaticResource WidgetTrackRowTemplate}"
+                                                                 DoubleTapped="WidgetList_DoubleTapped" />
+                                                    </Panel>
+                                                </DataTemplate>
+                                                <DataTemplate x:DataType="vm:PlaylistWidgetContent">
+                                                    <Panel>
+                                                        <Panel ClipToBounds="True" Background="Transparent"
+                                                               Cursor="Hand"
+                                                               IsVisible="{Binding CoverOnly}"
+                                                               DoubleTapped="PlaylistOpen_DoubleTapped">
+                                                            <Border Background="{DynamicResource Inset2}">
+                                                                <TextBlock Classes="mono" Text="♪" FontSize="28"
+                                                                           Foreground="{DynamicResource TextFaint}"
+                                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            </Border>
+                                                            <Image Source="{Binding Cover}" Stretch="UniformToFill" />
+                                                            <Border VerticalAlignment="Bottom" Height="34">
+                                                                <Border.Background>
+                                                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                                                        <GradientStop Offset="0" Color="#00000000" />
+                                                                        <GradientStop Offset="1" Color="#C0000000" />
+                                                                    </LinearGradientBrush>
+                                                                </Border.Background>
+                                                            </Border>
+                                                            <TextBlock Text="{Binding PlaylistName}" FontSize="11"
+                                                                       Foreground="White" Effect="drop-shadow(0 1 2 #C0000000)"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       VerticalAlignment="Bottom" Margin="7,0,7,5" />
+                                                        </Panel>
+                                                        <Grid RowDefinitions="Auto,*" IsVisible="{Binding !CoverOnly}">
+                                                        <Border Grid.Row="0" Classes="menuRow" Padding="2" Margin="0,0,0,6"
+                                                                DoubleTapped="PlaylistOpen_DoubleTapped">
+                                                            <Grid ColumnDefinitions="*,Auto">
+                                                                <TextBlock Text="{Binding PlaylistName}" FontSize="12"
+                                                                           Foreground="{DynamicResource Text}"
+                                                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                                <TextBlock Grid.Column="1" Classes="mono dim" Text="›"
+                                                                           FontSize="14" VerticalAlignment="Center" />
+                                                            </Grid>
+                                                        </Border>
+                                                        <Panel Grid.Row="1">
+                                                            <TextBlock Classes="mono faint" Text="{DynamicResource Home.EmptyList}" FontSize="9"
+                                                                       LetterSpacing="1" HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"
+                                                                       IsVisible="{Binding IsEmpty}" />
+                                                            <ListBox Classes="widgetList" ItemsSource="{Binding Tracks}"
+                                                                     ItemTemplate="{StaticResource WidgetTrackRowTemplate}"
+                                                                     DoubleTapped="WidgetList_DoubleTapped" />
+                                                        </Panel>
+                                                        </Grid>
+                                                    </Panel>
+                                                </DataTemplate>
+                                                <DataTemplate x:DataType="vm:ResumeWidgetContent">
+                                                    <Panel>
+                                                        <TextBlock Classes="mono faint" Text="{DynamicResource Home.NoTrack}" FontSize="9"
+                                                                   LetterSpacing="1" HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding !HasTrack}" />
+                                                        <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                                                            <Grid.IsVisible>
+                                                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                                    <Binding Path="HasTrack" />
+                                                                    <Binding Path="!IsLarge" />
+                                                                </MultiBinding>
+                                                            </Grid.IsVisible>
+                                                            <Border Width="84" Height="84" Background="{DynamicResource Inset2}"
+                                                                    BorderBrush="{DynamicResource BorderSoft}" BorderThickness="1"
+                                                                    VerticalAlignment="Center" ClipToBounds="True">
+                                                                <Button Classes="coverPlay" Command="{Binding ResumeCommand}">
+                                                                    <Panel>
+                                                                        <TextBlock Classes="mono" Text="♪" FontSize="26"
+                                                                                   Foreground="{DynamicResource TextFaint}"
+                                                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                        <Image Source="{Binding Cover}" Stretch="UniformToFill" />
+                                                                        <Panel Classes="playBadge" Width="34" Height="34"
+                                                                               HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                            <Ellipse Fill="#66000000" Stroke="White" StrokeThickness="1.5" />
+                                                                            <Path Data="M0,0 L9,5.5 0,11 Z" Stretch="None" Width="9" Height="11"
+                                                                                  Fill="White" Margin="2,0,0,0"
+                                                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                                  IsVisible="{Binding !IsPlaying}" />
+                                                                            <Path Data="M0,0 L3,0 3,11 0,11 Z M5.5,0 L8.5,0 8.5,11 5.5,11 Z"
+                                                                                  Stretch="None" Width="8.5" Height="11" Fill="White"
+                                                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                                  IsVisible="{Binding IsPlaying}" />
+                                                                        </Panel>
+                                                                    </Panel>
+                                                                </Button>
+                                                            </Border>
+                                                            <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="4"
+                                                                        VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding Title}" FontSize="12"
+                                                                           TextTrimming="CharacterEllipsis" />
+                                                                <TextBlock Classes="mono dim" Text="{Binding Artist}" FontSize="10"
+                                                                           TextTrimming="CharacterEllipsis" />
+                                                                <Grid Height="3" Margin="0,2">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="{Binding Filled}" />
+                                                                        <ColumnDefinition Width="{Binding Remain}" />
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <Border Grid.Column="0" Background="{DynamicResource Acc}" />
+                                                                    <Border Grid.Column="1" Background="{DynamicResource Inset2}" />
+                                                                </Grid>
+                                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                                    <TextBlock Classes="mono dim" Text="{Binding PositionText}" FontSize="9"
+                                                                               VerticalAlignment="Center" />
+                                                                    <TextBlock Grid.Column="2" Classes="mono dim" Text="{Binding DurationText}" FontSize="9"
+                                                                               VerticalAlignment="Center" />
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                        <Panel ClipToBounds="True">
+                                                            <Panel.IsVisible>
+                                                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                                    <Binding Path="HasTrack" />
+                                                                    <Binding Path="IsLarge" />
+                                                                </MultiBinding>
+                                                            </Panel.IsVisible>
+                                                            <Border Background="{DynamicResource Inset2}">
+                                                                <TextBlock Classes="mono" Text="♪" FontSize="40"
+                                                                           Foreground="{DynamicResource TextFaint}"
+                                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            </Border>
+                                                            <Image Source="{Binding Cover}" Stretch="UniformToFill" />
+                                                            <Border VerticalAlignment="Top" Height="46">
+                                                                <Border.Background>
+                                                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                                                        <GradientStop Offset="0" Color="#B0000000" />
+                                                                        <GradientStop Offset="1" Color="#00000000" />
+                                                                    </LinearGradientBrush>
+                                                                </Border.Background>
+                                                            </Border>
+                                                            <Border VerticalAlignment="Bottom" Height="40">
+                                                                <Border.Background>
+                                                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                                                        <GradientStop Offset="0" Color="#00000000" />
+                                                                        <GradientStop Offset="1" Color="#C0000000" />
+                                                                    </LinearGradientBrush>
+                                                                </Border.Background>
+                                                            </Border>
+                                                            <StackPanel VerticalAlignment="Top" Margin="10,7">
+                                                                <TextBlock Text="{Binding Title}" FontSize="13" Foreground="White"
+                                                                           Effect="drop-shadow(0 1 2 #C0000000)"
+                                                                           TextTrimming="CharacterEllipsis" />
+                                                                <TextBlock Text="{Binding Artist}" FontSize="10" Foreground="#DDFFFFFF"
+                                                                           Effect="drop-shadow(0 1 2 #C0000000)"
+                                                                           TextTrimming="CharacterEllipsis" />
+                                                            </StackPanel>
+                                                            <Button Classes="centerPlay" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                    Command="{Binding ResumeCommand}">
+                                                                <Panel Width="42" Height="42">
+                                                                    <Ellipse Fill="#66000000" Stroke="White" StrokeThickness="1.5" />
+                                                                    <Path Data="M0,0 L11,7 0,14 Z" Stretch="None" Width="11" Height="14" Fill="White"
+                                                                          Margin="3,0,0,0"
+                                                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                          IsVisible="{Binding !IsPlaying}" />
+                                                                    <Path Data="M0,0 L3.5,0 3.5,14 0,14 Z M7,0 L10.5,0 10.5,14 7,14 Z"
+                                                                          Stretch="None" Width="11" Height="14" Fill="White"
+                                                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                          IsVisible="{Binding IsPlaying}" />
+                                                                </Panel>
+                                                            </Button>
+                                                            <Grid VerticalAlignment="Bottom" Margin="10,0,10,8" ColumnDefinitions="Auto,*,Auto"
+                                                                  RowDefinitions="Auto,Auto">
+                                                                <Grid Grid.Row="0" Grid.ColumnSpan="3" Height="3" Margin="0,0,0,4">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="{Binding Filled}" />
+                                                                        <ColumnDefinition Width="{Binding Remain}" />
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <Border Grid.Column="0" Background="{DynamicResource Acc}" />
+                                                                    <Border Grid.Column="1" Background="#59FFFFFF" />
+                                                                </Grid>
+                                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding PositionText}" FontSize="9"
+                                                                           Foreground="#DDFFFFFF" Effect="drop-shadow(0 1 2 #C0000000)" />
+                                                                <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding DurationText}" FontSize="9"
+                                                                           Foreground="#DDFFFFFF" Effect="drop-shadow(0 1 2 #C0000000)" />
+                                                            </Grid>
+                                                        </Panel>
+                                                    </Panel>
+                                                </DataTemplate>
+                                                <DataTemplate x:DataType="vm:FrequentWidgetContent">
+                                                    <Grid RowDefinitions="Auto,*">
+                                                        <c:KebuzComboBox Grid.Row="0" Margin="0,0,0,6"
+                                                                         HorizontalAlignment="Stretch"
+                                                                         ItemsSource="{Binding Periods}"
+                                                                         SelectedItem="{Binding SelectedPeriod}">
+                                                            <c:KebuzComboBox.ItemTemplate>
+                                                                <DataTemplate x:DataType="vm:WidgetPeriodOption">
+                                                                    <TextBlock Text="{Binding Label}" FontSize="11" />
+                                                                </DataTemplate>
+                                                            </c:KebuzComboBox.ItemTemplate>
+                                                        </c:KebuzComboBox>
+                                                        <Panel Grid.Row="1">
+                                                            <TextBlock Classes="mono faint" Text="{DynamicResource Home.NoData}" FontSize="9"
+                                                                       LetterSpacing="1" HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"
+                                                                       IsVisible="{Binding IsEmpty}" />
+                                                            <ListBox Classes="widgetList" ItemsSource="{Binding Tracks}"
+                                                                     ItemTemplate="{StaticResource WidgetTrackRowTemplate}"
+                                                                     DoubleTapped="WidgetList_DoubleTapped" />
+                                                        </Panel>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ContentControl.DataTemplates>
+                                        </ContentControl>
+                                    </Panel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <Border x:Name="DropGhost" BorderThickness="1"
+                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                    IsVisible="False" IsHitTestVisible="False" />
+        </Panel>
+    </Grid>
+</UserControl>

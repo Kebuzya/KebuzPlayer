@@ -1,0 +1,177 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KebuzPlayer.ViewModels"
+             xmlns:themes="using:KebuzPlayer.Themes"
+             xmlns:lang="using:KebuzPlayer.Lang"
+             xmlns:c="using:KebuzPlayer.Controls"
+             xmlns:v="using:KebuzPlayer.Views"
+             x:Class="KebuzPlayer.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="24,20" Spacing="12" MaxWidth="460" HorizontalAlignment="Left">
+        <TextBlock Classes="mono" Text="{DynamicResource Settings.Appearance}" FontSize="11" LetterSpacing="1.5"
+                   Foreground="{DynamicResource Acc}" />
+        <StackPanel Spacing="6">
+            <TextBlock Classes="mono dim" Text="{DynamicResource Settings.Theme}" FontSize="11" />
+            <c:KebuzComboBox Width="220" HorizontalAlignment="Left"
+                      FontFamily="{StaticResource FontMono}" FontSize="13"
+                      ItemsSource="{Binding Themes}"
+                      SelectedItem="{Binding SelectedTheme}">
+                <c:KebuzComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="themes:ThemeInfo">
+                        <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                </c:KebuzComboBox.ItemTemplate>
+            </c:KebuzComboBox>
+        </StackPanel>
+        <StackPanel Spacing="6">
+            <TextBlock Classes="mono dim" Text="{DynamicResource Settings.Language}" FontSize="11" />
+            <c:KebuzComboBox Width="220" HorizontalAlignment="Left"
+                      FontFamily="{StaticResource FontMono}" FontSize="13"
+                      ItemsSource="{Binding Languages}"
+                      SelectedItem="{Binding SelectedLanguage}">
+                <c:KebuzComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="lang:LanguageInfo">
+                        <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                </c:KebuzComboBox.ItemTemplate>
+            </c:KebuzComboBox>
+        </StackPanel>
+
+        <TextBlock Classes="mono" Text="{DynamicResource Settings.Behavior}" FontSize="11" LetterSpacing="1.5"
+                   Foreground="{DynamicResource Acc}" Margin="0,14,0,0" />
+        <CheckBox IsChecked="{Binding WheelDropdowns}"
+                  FontFamily="{StaticResource FontMono}" FontSize="12">
+            <TextBlock Text="{DynamicResource Settings.WheelDropdowns}"
+                       TextWrapping="Wrap" />
+        </CheckBox>
+        <CheckBox IsChecked="{Binding MaximizeOverTaskbar}"
+                  FontFamily="{StaticResource FontMono}" FontSize="12">
+            <TextBlock Text="{DynamicResource Settings.OverTaskbar}"
+                       TextWrapping="Wrap" />
+        </CheckBox>
+        <StackPanel Spacing="6">
+            <TextBlock Classes="mono dim" Text="{DynamicResource Settings.TransferMode}" FontSize="11" />
+            <c:KebuzComboBox Width="220" HorizontalAlignment="Left"
+                      FontFamily="{StaticResource FontMono}" FontSize="13"
+                      ItemsSource="{Binding FileTransferModeOptions}"
+                      SelectedItem="{Binding SelectedFileTransferMode}">
+                <c:KebuzComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:FileTransferModeOption">
+                        <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                </c:KebuzComboBox.ItemTemplate>
+            </c:KebuzComboBox>
+        </StackPanel>
+
+        <StackPanel Spacing="6">
+            <TextBlock Classes="mono dim" Text="{DynamicResource Settings.Retention}" FontSize="11" />
+            <c:KebuzComboBox Width="220" HorizontalAlignment="Left"
+                      FontFamily="{StaticResource FontMono}" FontSize="13"
+                      ItemsSource="{Binding RetentionOptions}"
+                      SelectedItem="{Binding SelectedRetention}">
+                <c:KebuzComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:RetentionOption">
+                        <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                </c:KebuzComboBox.ItemTemplate>
+            </c:KebuzComboBox>
+            <TextBlock Classes="mono dim" FontSize="11" TextWrapping="Wrap" MaxWidth="320"
+                       Text="{Binding DetachedSummary}" />
+            <Button Classes="ghost" HorizontalAlignment="Left" Padding="10,4"
+                    Command="{Binding PurgeDetachedCommand}">
+                <TextBlock Text="{DynamicResource Settings.PurgeDetached}" FontSize="12" />
+            </Button>
+        </StackPanel>
+
+        <TextBlock Classes="mono" Text="{DynamicResource Settings.Overlay}" FontSize="11" LetterSpacing="1.5"
+                   Foreground="{DynamicResource Acc}" Margin="0,14,0,0" />
+        <StackPanel Spacing="6">
+            <TextBlock Classes="mono dim" Text="{DynamicResource Settings.OverlayStyle}" FontSize="11" />
+            <c:KebuzComboBox Width="220" HorizontalAlignment="Left"
+                      FontFamily="{StaticResource FontMono}" FontSize="13"
+                      ItemsSource="{Binding OverlayStyleOptions}"
+                      SelectedItem="{Binding SelectedOverlayStyle}">
+                <c:KebuzComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:OverlayStyleOption">
+                        <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                </c:KebuzComboBox.ItemTemplate>
+            </c:KebuzComboBox>
+        </StackPanel>
+
+        <TextBlock Classes="mono" Text="{DynamicResource Settings.Visualizer}" FontSize="11" LetterSpacing="1.5"
+                   Foreground="{DynamicResource Acc}" Margin="0,14,0,0" />
+        <StackPanel Spacing="6" Margin="0,0,0,10">
+            <TextBlock Classes="mono dim" Text="{DynamicResource Settings.FrameRate}" FontSize="11" />
+            <c:KebuzComboBox Width="220" HorizontalAlignment="Left"
+                      FontFamily="{StaticResource FontMono}" FontSize="13"
+                      ItemsSource="{Binding FrameRateOptions}"
+                      SelectedItem="{Binding SelectedFrameRate}">
+                <c:KebuzComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:VizFrameRateOption">
+                        <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                </c:KebuzComboBox.ItemTemplate>
+            </c:KebuzComboBox>
+            <TextBlock Classes="mono dim" FontSize="11" TextWrapping="Wrap" MaxWidth="320"
+                       Text="{DynamicResource Settings.FrameRateHint}" />
+        </StackPanel>
+        <StackPanel Spacing="16">
+            <v:VizPanelSettingsView DataContext="{Binding LibraryViz}" />
+            <v:VizPanelSettingsView DataContext="{Binding TabViz}" />
+            <v:VizPanelSettingsView DataContext="{Binding OverlayViz}" />
+            <v:VizPanelSettingsView DataContext="{Binding HomeViz}" />
+        </StackPanel>
+
+        <TextBlock Classes="mono" Text="{DynamicResource Settings.Covers}" FontSize="11" LetterSpacing="1.5"
+                   Foreground="{DynamicResource Acc}" Margin="0,14,0,0" />
+        <StackPanel Spacing="6">
+            <TextBlock Classes="mono dim" Text="{DynamicResource Settings.PreviewBatch}" FontSize="11" />
+            <c:KebuzComboBox Width="220" HorizontalAlignment="Left"
+                      FontFamily="{StaticResource FontMono}" FontSize="13"
+                      ItemsSource="{Binding PreviewBatchOptions}"
+                      SelectedItem="{Binding SelectedPreviewBatch}" />
+        </StackPanel>
+
+        <TextBlock Classes="mono" Text="{DynamicResource Settings.Windows}" FontSize="11" LetterSpacing="1.5"
+                   Foreground="{DynamicResource Acc}" Margin="0,14,0,0" />
+        <StackPanel Spacing="6" IsEnabled="{Binding !IsPortableMode}">
+            <TextBlock Classes="mono dim" FontSize="11"
+                       IsVisible="{Binding IsRegisteredWithWindows}"
+                       Text="{DynamicResource Settings.Registered}" />
+            <TextBlock Classes="mono dim" FontSize="11"
+                       IsVisible="{Binding !IsRegisteredWithWindows}"
+                       Text="{DynamicResource Settings.NotRegistered}" />
+            <Button Classes="ghost" HorizontalAlignment="Left"
+                    Command="{Binding ToggleWindowsRegistrationCommand}"
+                    IsVisible="{Binding IsRegisteredWithWindows}"
+                    Content="{DynamicResource Settings.Unregister}" />
+            <Button Classes="ghost" HorizontalAlignment="Left"
+                    Command="{Binding ToggleWindowsRegistrationCommand}"
+                    IsVisible="{Binding !IsRegisteredWithWindows}"
+                    Content="{DynamicResource Settings.Register}" />
+        </StackPanel>
+        <TextBlock Classes="mono dim" FontSize="11" TextWrapping="Wrap"
+                   IsVisible="{Binding IsPortableMode}"
+                   Text="{DynamicResource Settings.PortableOnly}" />
+
+        <TextBlock Classes="mono" Text="{DynamicResource Settings.Updates}" FontSize="11" LetterSpacing="1.5"
+                   Foreground="{DynamicResource Acc}" Margin="0,14,0,0" />
+        <CheckBox IsChecked="{Binding CheckForUpdates}"
+                  FontFamily="{StaticResource FontMono}" FontSize="12">
+            <TextBlock Text="{DynamicResource Settings.CheckUpdates}"
+                       TextWrapping="Wrap" />
+        </CheckBox>
+        <StackPanel Orientation="Horizontal" Spacing="10"
+                    IsVisible="{Binding Updates.HasUpdate}">
+            <TextBlock Classes="mono dim" FontSize="11" VerticalAlignment="Center"
+                       Text="{Binding Updates.UpdateText}" />
+            <Button Classes="ghost" Padding="10,4"
+                    Command="{Binding Updates.OpenPageCommand}">
+                <TextBlock Text="{DynamicResource Update.OpenPage}" FontSize="12" />
+            </Button>
+        </StackPanel>
+    </StackPanel>
+    </ScrollViewer>
+</UserControl>

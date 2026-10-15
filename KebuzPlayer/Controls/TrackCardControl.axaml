@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KebuzPlayer.ViewModels"
+             x:Class="KebuzPlayer.Controls.TrackCardControl"
+             x:DataType="vm:TrackRow">
+    <StackPanel Width="150" Spacing="5" Background="Transparent">
+        <Border Width="150" Height="150"
+                Background="{DynamicResource Inset2}"
+                BorderBrush="{DynamicResource BorderStrong}" BorderThickness="1">
+            <Panel>
+                <TextBlock Classes="mono" Text="♪" FontSize="30"
+                           Foreground="{DynamicResource TextDim}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Image Source="{Binding Thumb}" Stretch="UniformToFill" />
+            </Panel>
+        </Border>
+        <TextBlock Text="{Binding Track.Title}" FontSize="13"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock Classes="mono dim" Text="{Binding Track.Artist}" FontSize="11"
+                   TextTrimming="CharacterEllipsis" />
+    </StackPanel>
+</UserControl>
