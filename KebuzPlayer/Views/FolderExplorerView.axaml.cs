@@ -273,7 +273,7 @@ public partial class FolderExplorerView : UserControl
 
     private (ExplorerEntry entry, ListBox list)? MenuTarget(object? sender)
     {
-        if (sender is MenuItem { DataContext: ExplorerEntry entry, Parent: ContextMenu { PlacementTarget: Control anchor } })
+        if (sender is MenuItem { DataContext: ExplorerEntry entry } && Controls.ContextMenuOwner.Find(this, sender) is { } anchor)
         {
             var list = anchor.FindAncestorOfType<ListBox>() ?? anchor as ListBox;
             if (list != null) return (entry, list);

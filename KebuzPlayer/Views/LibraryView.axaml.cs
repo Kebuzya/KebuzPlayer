@@ -125,7 +125,8 @@ public partial class LibraryView : UserControl
 
     private void PreviewCover_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is MenuItem { DataContext: TrackRow row, Parent: ContextMenu { PlacementTarget: Control anchor } } &&
+        if (sender is MenuItem { DataContext: TrackRow row } &&
+            Controls.ContextMenuOwner.Find(this, sender) is { } anchor &&
             DataContext is LibraryViewModel vm)
         {
             vm.Preview.LoadCommand.Execute(row.Track);

@@ -33,7 +33,8 @@ public partial class PlaylistsView : UserControl
     private async void Rename_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not PlaylistsViewModel vm) return;
-        if (sender is not MenuItem { DataContext: PlaylistCardViewModel card, Parent: ContextMenu { PlacementTarget: Control anchor } }) return;
+        if (sender is not MenuItem { DataContext: PlaylistCardViewModel card } ||
+            ContextMenuOwner.Find(this, sender) is not { } anchor) return;
         var name = await PromptFlyout.ShowAsync(anchor, Loc.T("Playlists.RenamePrompt"), card.Name);
         if (name != null)
             await vm.RenameAsync(card, name);
@@ -42,7 +43,8 @@ public partial class PlaylistsView : UserControl
     private async void Delete_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not PlaylistsViewModel vm) return;
-        if (sender is not MenuItem { DataContext: PlaylistCardViewModel card, Parent: ContextMenu { PlacementTarget: Control anchor } }) return;
+        if (sender is not MenuItem { DataContext: PlaylistCardViewModel card } ||
+            ContextMenuOwner.Find(this, sender) is not { } anchor) return;
         var ok = await PromptFlyout.ConfirmAsync(anchor, Loc.F("Playlists.DeleteConfirm", card.Name));
         if (ok)
             await vm.DeleteAsync(card);
