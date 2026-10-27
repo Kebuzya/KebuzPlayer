@@ -7,7 +7,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\KebuzPlayer_icon.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Product>KebuzPlayer</Product>
     <Company>Kebuzya</Company>
   </PropertyGroup>
