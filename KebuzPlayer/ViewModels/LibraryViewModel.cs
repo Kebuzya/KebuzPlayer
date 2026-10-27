@@ -88,9 +88,7 @@ public partial class LibraryViewModel : ViewModelBase, IDisposable
         Preview.CoverSaved += (_, track) =>
         {
             _thumbs.InvalidateTrack(track.Id);
-            foreach (var row in Tracks)
-                if (row.Track.Id == track.Id)
-                    row.ReloadThumb();
+            Infrastructure.LibraryNotifier.RaiseCoverChanged(track.Id);
         };
         if (Visualizer.VisualizerHub.Instance is { } hub)
         {

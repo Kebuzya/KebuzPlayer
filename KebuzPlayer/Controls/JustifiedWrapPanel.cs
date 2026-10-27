@@ -34,6 +34,7 @@ public class JustifiedWrapPanel : Panel
     {
         int start = 0;
         double y = 0;
+        double lastExtra = 0;
         while (start < Children.Count)
         {
             double lineWidth = 0, lineHeight = 0;
@@ -47,7 +48,8 @@ public class JustifiedWrapPanel : Panel
                 count++;
             }
             bool fullLine = start + count < Children.Count && count > 1;
-            double extra = fullLine ? Math.Max(0, finalSize.Width - lineWidth) / (count - 1) : 0;
+            double extra = fullLine ? Math.Max(0, finalSize.Width - lineWidth) / (count - 1) : lastExtra;
+            if (fullLine) lastExtra = extra;
             double x = 0;
             for (int i = start; i < start + count; i++)
             {

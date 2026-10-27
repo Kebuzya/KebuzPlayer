@@ -10,6 +10,7 @@ public partial class TrackRow : ObservableObject
 {
     private readonly CoverThumbCache _thumbs;
     private CancellationTokenSource? _cts;
+    private bool _listening;
 
     public Track Track { get; }
 
@@ -28,6 +29,11 @@ public partial class TrackRow : ObservableObject
 
     public async void OnCardAttached()
     {
+        if (!_listening)
+        {
+            LibraryNotifier.CoverChanged += OnCoverChanged;
+            _listening = true;
+        }
         if (Thumb != null) return;
         _cts?.Cancel();
         _cts = new CancellationTokenSource();
@@ -43,9 +49,20 @@ public partial class TrackRow : ObservableObject
 
     public void OnCardDetached()
     {
+        if (_listening)
+        {
+            LibraryNotifier.CoverChanged -= OnCoverChanged;
+            _listening = false;
+        }
         _cts?.Cancel();
         _cts = null;
         Thumb = null;
+    }
+
+    private void OnCoverChanged(int trackId)
+    {
+        if (trackId == Track.Id)
+            ReloadThumb();
     }
 
     public async void ReloadThumb()

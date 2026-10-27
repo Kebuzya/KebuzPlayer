@@ -107,8 +107,12 @@ public partial class PlayerViewModel : ViewModelBase
         Preview.CoverSaved += (_, track) =>
         {
             _thumbs.InvalidateTrack(track.Id);
-            if (_audio.CurrentTrack?.Id == track.Id)
-                LoadCover(track.Id);
+            Infrastructure.LibraryNotifier.RaiseCoverChanged(track.Id);
+        };
+        Infrastructure.LibraryNotifier.CoverChanged += id =>
+        {
+            if (_audio.CurrentTrack?.Id == id)
+                LoadCover(id);
         };
 
         RestoreLastTrack();
