@@ -46,6 +46,9 @@ public sealed class UserSettings
     public string? AvailableUpdateVersion { get; set; }
     public string? AvailableUpdateUrl { get; set; }
     public string? DismissedUpdateVersion { get; set; }
+    public bool EqualizerEnabled { get; set; }
+    public EqualizerPreset EqualizerPreset { get; set; } = EqualizerPreset.Flat;
+    public float[] EqualizerCustomGains { get; set; } = new float[EqualizerPresets.BandCount];
 }
 
 public sealed class JsonSettingsService
@@ -101,6 +104,8 @@ public sealed class JsonSettingsService
         if (!Enum.IsDefined(s.LibraryViewMode)) s.LibraryViewMode = defaults.LibraryViewMode;
         if (!Enum.IsDefined(s.LibrarySortMode)) s.LibrarySortMode = defaults.LibrarySortMode;
         if (!Enum.IsDefined(s.FileTransferMode)) s.FileTransferMode = defaults.FileTransferMode;
+        if (!Enum.IsDefined(s.EqualizerPreset)) s.EqualizerPreset = defaults.EqualizerPreset;
+        s.EqualizerCustomGains = EqualizerPresets.Normalize(s.EqualizerCustomGains);
         s.PlaylistViewModes ??= new();
         s.PlaylistSortModes ??= new();
         s.PlaylistSortDescending ??= new();

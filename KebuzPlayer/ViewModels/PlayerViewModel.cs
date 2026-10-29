@@ -78,6 +78,7 @@ public partial class PlayerViewModel : ViewModelBase
     public bool HasError => !string.IsNullOrEmpty(ErrorText);
 
     public CoverPreviewViewModel Preview { get; }
+    public EqualizerViewModel Equalizer { get; }
 
     public string PositionText => FormatTime(PositionSeconds);
     public string DurationText => FormatTime(DurationSeconds);
@@ -90,6 +91,7 @@ public partial class PlayerViewModel : ViewModelBase
         _settings = settings;
         _thumbs = thumbs;
         Preview = new CoverPreviewViewModel(library, settings);
+        Equalizer = new EqualizerViewModel(audio, settings);
 
         _volumePercent = (int)Math.Round(Math.Clamp(settings.Current.MasterVolume, 0f, 1f) * 100);
         _audio.SetMasterVolume(settings.Current.MasterVolume);
@@ -451,6 +453,7 @@ public partial class PlayerViewModel : ViewModelBase
     {
         if (!HasTrack) Title = Loc.T("Player.NoTrack");
         UpdateGainDisplay();
+        Equalizer.RefreshTexts();
     }
 
     private void UpdateRepeatDisplay()

@@ -24,6 +24,7 @@ public class AudioService : IDisposable
     private TimeSpan _resumeAt;
 
     public FftSampleProvider? FftProvider => _fftProvider;
+    public Equalizer Equalizer { get; } = new();
     public IReadOnlyList<Track> Queue => _queue;
 
     public Track? CurrentTrack { get; private set; }
@@ -76,7 +77,7 @@ public class AudioService : IDisposable
     private void OpenOutput(Track track)
     {
         _fileReader     = AudioReaderFactory.Open(track.Path);
-        _fftProvider    = new FftSampleProvider(_fileReader.ToSampleProvider());
+        _fftProvider    = new FftSampleProvider(new EqualizerSampleProvider(_fileReader.ToSampleProvider(), Equalizer));
         _volumeProvider = new VolumeSampleProvider(_fftProvider);
         ApplyVolume();
 

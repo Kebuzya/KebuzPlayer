@@ -225,6 +225,21 @@
 
                 <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8"
                             VerticalAlignment="Center" Margin="16,0,0,0">
+                    <Button Classes="ctrl" Width="24" Height="24"
+                            Classes.active="{Binding Player.Equalizer.IsEnabled}"
+                            ToolTip.Tip="{DynamicResource Eq.Tip}">
+                        <Button.Flyout>
+                            <Flyout Placement="TopEdgeAlignedRight">
+                                <v:EqualizerPanel DataContext="{Binding Player.Equalizer}" />
+                            </Flyout>
+                        </Button.Flyout>
+                        <Panel Width="16" Height="14">
+                            <Path Classes="stroke" Stretch="None"
+                                  Data="M2,0 L2,14 M8,0 L8,14 M14,0 L14,14" />
+                            <Path Stretch="None"
+                                  Data="M0,8 L4,8 4,11 0,11 Z M6,2 L10,2 10,5 6,5 Z M12,6 L16,6 16,9 12,9 Z" />
+                        </Panel>
+                    </Button>
                     <c:KebuzSlider Classes="thin" Width="100"
                             Foreground="{DynamicResource Acc2}"
                             Minimum="0" Maximum="100"

@@ -1,0 +1,106 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KebuzPlayer.ViewModels"
+             xmlns:c="using:KebuzPlayer.Controls"
+             x:Class="KebuzPlayer.Views.EqualizerPanel"
+             x:DataType="vm:EqualizerViewModel">
+    <UserControl.Styles>
+        <Style Selector="Slider.eq">
+            <Setter Property="Orientation" Value="Vertical" />
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Height" Value="140" />
+            <Setter Property="Foreground" Value="{DynamicResource Acc}" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid Background="Transparent">
+                        <Border Width="4" HorizontalAlignment="Center"
+                                Background="{DynamicResource Inset2}"
+                                BorderBrush="{DynamicResource BorderSoft}"
+                                BorderThickness="1" />
+                        <Border Width="14" Height="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Background="{DynamicResource BorderStrong}" />
+                        <Track Name="PART_Track"
+                               Minimum="{TemplateBinding Minimum}"
+                               Maximum="{TemplateBinding Maximum}"
+                               Value="{TemplateBinding Value, Mode=TwoWay}"
+                               IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
+                               Orientation="Vertical">
+                            <Track.DecreaseButton>
+                                <RepeatButton Name="PART_DecreaseButton" Focusable="False">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate>
+                                            <Border Background="Transparent" />
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseButton>
+                            <Track.IncreaseButton>
+                                <RepeatButton Name="PART_IncreaseButton" Focusable="False">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate>
+                                            <Border Background="Transparent" />
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseButton>
+                            <Thumb Width="16" Height="7">
+                                <Thumb.Template>
+                                    <ControlTemplate>
+                                        <Border Background="{Binding $parent[Slider].Foreground}" />
+                                    </ControlTemplate>
+                                </Thumb.Template>
+                            </Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="ItemsControl.off">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </UserControl.Styles>
+    <StackPanel Spacing="12" Width="440">
+        <Grid ColumnDefinitions="*,Auto,Auto">
+            <TextBlock Grid.Column="0" Classes="mono dim" FontSize="11" LetterSpacing="0.8"
+                       Text="{DynamicResource Eq.Title}" VerticalAlignment="Center" />
+            <CheckBox Grid.Column="1" Margin="0,0,12,0"
+                      Content="{DynamicResource Eq.Enabled}"
+                      IsChecked="{Binding IsEnabled}" />
+            <c:KebuzComboBox Grid.Column="2" Width="150"
+                             ItemsSource="{Binding Presets}"
+                             SelectedItem="{Binding SelectedPreset}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:EqualizerPresetOption">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </c:KebuzComboBox>
+        </Grid>
+        <ItemsControl ItemsSource="{Binding Bands}" Classes.off="{Binding !IsEnabled}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:EqualizerBandViewModel">
+                    <StackPanel Width="44" Spacing="4">
+                        <TextBlock Classes="mono" FontSize="11" HorizontalAlignment="Center"
+                                   Text="{Binding GainText}" />
+                        <c:KebuzSlider Classes="eq" HorizontalAlignment="Center"
+                                       Minimum="-12" Maximum="12"
+                                       TickFrequency="0.5" IsSnapToTickEnabled="True"
+                                       Value="{Binding Gain}"
+                                       ToolTip.Tip="{DynamicResource Eq.BandTip}"
+                                       DoubleTapped="Band_DoubleTapped" />
+                        <TextBlock Classes="mono dim" FontSize="11" HorizontalAlignment="Center"
+                                   Text="{Binding Label}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Classes="ghost" HorizontalAlignment="Left"
+                Content="{DynamicResource Eq.Reset}"
+                Command="{Binding ResetCommand}" />
+    </StackPanel>
+</UserControl>
