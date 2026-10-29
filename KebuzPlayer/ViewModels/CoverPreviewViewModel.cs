@@ -54,6 +54,12 @@ public partial class CoverPreviewViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isGridVisible;
 
+    [ObservableProperty]
+    private bool _canWriteToFile;
+
+    [ObservableProperty]
+    private bool _writeToFile;
+
     private Track? _target;
     private TrackFeatures? _features;
     private int _batchStart;
@@ -89,10 +95,13 @@ public partial class CoverPreviewViewModel : ViewModelBase
         _pendingBytes = null;
         _pendingClear = false;
         ClearVariants();
+        CanWriteToFile = false;
+        WriteToFile = false;
 
         try
         {
             var bytes = await _library.GetCoverArtAsync(track.Id);
+            CanWriteToFile = !await LibraryService.HasForeignCoverAsync(track.Path, bytes);
             SetPreview(bytes);
             PreviewHint = bytes is { Length: > 0 } ? Loc.T("Cover.Hint.Current") : Loc.T("Cover.Hint.None");
         }
@@ -188,7 +197,7 @@ public partial class CoverPreviewViewModel : ViewModelBase
         IsBusy = true;
         try
         {
-            var bytes = await Task.Run(() => TagService.TryGetEmbeddedCoverBytes(track.Path));
+            var bytes = await Task.Run(() => TagService.TryGetEmbeddedCoverBytes(track.Path, skipOwn: true));
             ClearVariants();
             if (bytes is { Length: > 0 })
             {
@@ -244,10 +253,26 @@ public partial class CoverPreviewViewModel : ViewModelBase
             }
             PreviewHint = Loc.T("Cover.Hint.Saved");
             CoverSaved?.Invoke(this, track);
+            if (WriteToFile && CanWriteToFile)
+                await WriteSavedToFileAsync(track);
         }
         catch
         {
             PreviewHint = Loc.T("Cover.Hint.SaveError");
+        }
+    }
+
+    private async Task WriteSavedToFileAsync(Track track)
+    {
+        var result = await _library.WriteCoversToFilesAsync([track]);
+        if (result.Written > 0)
+        {
+            WriteToFile = false;
+            PreviewHint = Loc.T("Cover.Hint.SavedToFile");
+        }
+        else if (result.Failed.Count > 0)
+        {
+            PreviewHint = Loc.F("Cover.Hint.FileWriteError", result.Failed[0]);
         }
     }
 

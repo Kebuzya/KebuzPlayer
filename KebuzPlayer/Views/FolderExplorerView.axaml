@@ -12,6 +12,7 @@
                     <ContextMenu>
                         <MenuItem Header="{DynamicResource Track.Edit}" Click="EditMetadata_Click" />
                         <MenuItem Header="{DynamicResource Track.BatchEdit}" Click="BatchEditMetadata_Click" />
+                        <MenuItem Header="{DynamicResource Track.WriteCover}" Click="WriteCover_Click" />
                         <Separator />
                         <MenuItem Header="{DynamicResource Track.Hide}" Click="HideTrack_Click" />
                         <MenuItem Header="{DynamicResource Track.Unhide}" Click="UnhideTrack_Click" />

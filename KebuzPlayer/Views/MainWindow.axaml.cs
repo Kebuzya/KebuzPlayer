@@ -129,6 +129,12 @@ public partial class MainWindow : Window
         Avalonia.Threading.Dispatcher.UIThread.Post(() => CoverButton.Flyout?.ShowAt(CoverButton));
     }
 
+    private async void NowPlayingWriteCover_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm)
+            await vm.Player.WriteCurrentCoverToFileAsync();
+    }
+
     private async void NowPlayingEditMetadata_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MainWindowViewModel vm || vm.Player.CurrentTrack is not { } track) return;

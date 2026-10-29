@@ -271,6 +271,19 @@ public partial class PlayerViewModel : ViewModelBase
 
     public Track? CurrentTrack => _audio.CurrentTrack;
 
+    public async Task WriteCurrentCoverToFileAsync()
+    {
+        if (_audio.CurrentTrack is not { Id: > 0 } track) return;
+        try
+        {
+            ShowError(LibraryViewModel.CoverWriteSummary(await _library.WriteCoversToFilesAsync([track])));
+        }
+        catch (Exception ex)
+        {
+            ShowError(Loc.F("Common.ErrorWith", ex.Message));
+        }
+    }
+
     public async Task EditCurrentTrackAsync(string fileName, string title, string artist, string album)
     {
         var track = _audio.CurrentTrack;

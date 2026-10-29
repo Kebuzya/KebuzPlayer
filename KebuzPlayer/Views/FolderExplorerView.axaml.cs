@@ -307,6 +307,14 @@ public partial class FolderExplorerView : UserControl
             await vm.BatchEditTagsAsync(tracks, result.Value.Artist, result.Value.Album);
     }
 
+    private async void WriteCover_Click(object? sender, RoutedEventArgs e)
+    {
+        if (MenuTarget(sender) is not { } t || DataContext is not FolderExplorerViewModel vm) return;
+        var tracks = await vm.ResolveTracksAsync(SelectedFiles(t.entry, t.list));
+        if (tracks.Count == 0) { vm.StatusText = Loc.T("Explorer.FilesNotInLibrary"); return; }
+        await vm.WriteCoversToFilesAsync(tracks);
+    }
+
     private async void HideTrack_Click(object? sender, RoutedEventArgs e) => await SetHidden(sender, true);
 
     private async void UnhideTrack_Click(object? sender, RoutedEventArgs e) => await SetHidden(sender, false);

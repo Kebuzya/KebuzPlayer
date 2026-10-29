@@ -134,6 +134,12 @@ public partial class LibraryView : UserControl
         }
     }
 
+    private async void WriteCover_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem { DataContext: TrackRow row } && DataContext is LibraryViewModel vm)
+            await vm.WriteCoversToFilesAsync(TargetTracks(vm, row));
+    }
+
     private async void EditMetadata_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is not MenuItem { DataContext: TrackRow row } ||

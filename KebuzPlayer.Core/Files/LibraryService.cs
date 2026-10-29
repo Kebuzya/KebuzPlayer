@@ -6,6 +6,8 @@ using TagLib;
 
 namespace KebuzPlayer.Services;
 
+public sealed record CoverWriteResult(int Written, int AlreadyEmbedded, int NoCover, IReadOnlyList<string> Failed);
+
 public class LibraryService
 {
     internal static readonly HashSet<string> SupportedExtensions = new(StringComparer.OrdinalIgnoreCase)
@@ -337,6 +339,37 @@ public class LibraryService
         if (failed > 0)
             throw new IOException(CoreText.Format("Error.TagsPartlyFailed", "Обновлено треков: {0}, не удалось записать теги: {1}", changed, failed));
         return changed;
+    }
+
+    public static Task<bool> HasForeignCoverAsync(string path, byte[]? ownCover) =>
+        Task.Run(() => TagService.HasForeignCover(path, ownCover));
+
+    public async Task<CoverWriteResult> WriteCoversToFilesAsync(IEnumerable<Track> tracks)
+    {
+        int written = 0, embedded = 0, noCover = 0;
+        var failed = new List<string>();
+        foreach (var track in tracks)
+        {
+            var art = await _db.GetCoverArtAsync(track.Id);
+            if (art is not { Length: > 0 }) { noCover++; continue; }
+            if (await HasForeignCoverAsync(track.Path, art)) { embedded++; continue; }
+
+            var hold = Playback?.Release(track.Path);
+            try
+            {
+                await Task.Run(() => TagService.WriteCover(track.Path, art));
+                written++;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or TagLib.CorruptFileException or TagLib.UnsupportedFormatException)
+            {
+                failed.Add($"{Path.GetFileName(track.Path)}: {ex.Message}");
+            }
+            finally
+            {
+                if (hold != null) Playback!.Restore(hold);
+            }
+        }
+        return new CoverWriteResult(written, embedded, noCover, failed);
     }
 
     public async Task RenameTrackFileAsync(Track track, string newFileName)

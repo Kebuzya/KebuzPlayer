@@ -133,6 +133,71 @@ public class TagServiceTests : IDisposable
     }
 
     [Fact]
+    public void WriteCover_ThenRead_RoundTripsAsFrontCover()
+    {
+        var path = CreateWav();
+        TagService.WriteMetadata(path, "T", "A", "Al");
+        byte[] art = [0xFF, 0xD8, 0xFF, 0xE0, 1, 2, 3, 4, 0xFF, 0xD9];
+        TagService.WriteCover(path, art);
+
+        Assert.Equal(art, TagService.TryGetEmbeddedCoverBytes(path));
+        using var tf = TagLib.File.Create(path);
+        Assert.Equal(TagLib.PictureType.FrontCover, tf.Tag.Pictures.Single().Type);
+        Assert.Equal("image/jpeg", tf.Tag.Pictures.Single().MimeType);
+        Assert.Equal(TagService.OwnCoverDescription, tf.Tag.Pictures.Single().Description);
+        Assert.Null(TagService.TryGetEmbeddedCoverBytes(path, skipOwn: true));
+        Assert.Equal("T", tf.Tag.Title);
+    }
+
+    private string CreateMp3WithId3v24(string title, string year)
+    {
+        static byte[] Syncsafe(int n) => [(byte)((n >> 21) & 0x7F), (byte)((n >> 14) & 0x7F), (byte)((n >> 7) & 0x7F), (byte)(n & 0x7F)];
+        static byte[] TextFrame(string id, string text)
+        {
+            var payload = new byte[] { 3 }.Concat(System.Text.Encoding.UTF8.GetBytes(text)).ToArray();
+            return System.Text.Encoding.ASCII.GetBytes(id).Concat(Syncsafe(payload.Length)).Concat(new byte[2]).Concat(payload).ToArray();
+        }
+
+        var frames = TextFrame("TIT2", title).Concat(TextFrame("TDRC", year)).ToArray();
+        var path = Path.Combine(_dir, "v24.mp3");
+        using var fs = new FileStream(path, FileMode.Create);
+        fs.Write("ID3"u8);
+        fs.Write([4, 0, 0]);
+        fs.Write(Syncsafe(frames.Length));
+        fs.Write(frames);
+        var frame = new byte[417];
+        frame[0] = 0xFF; frame[1] = 0xFB; frame[2] = 0x90;
+        for (int i = 0; i < 40; i++) fs.Write(frame);
+        return path;
+    }
+
+    [Fact]
+    public void WriteCover_StoresId3v23SoWindowsExplorerShowsIt()
+    {
+        var path = CreateMp3WithId3v24("Заголовок", "2024");
+        byte[] art = [0xFF, 0xD8, 0xFF, 0xE0, 1, 2, 3, 4, 0xFF, 0xD9];
+
+        TagService.WriteCover(path, art);
+
+        var raw = File.ReadAllBytes(path);
+        Assert.Equal((byte)3, raw[3]);
+        int tit2 = raw.AsSpan(0, 400).IndexOf("TIT2"u8);
+        Assert.True(tit2 > 0);
+        Assert.NotEqual((byte)3, raw[tit2 + 10]);
+        using var tf = TagLib.File.Create(path);
+        Assert.Equal("Заголовок", tf.Tag.Title);
+        Assert.Equal(2024u, tf.Tag.Year);
+        Assert.Equal(art, tf.Tag.Pictures.Single().Data.Data);
+    }
+
+    [Fact]
+    public void WriteCover_MissingFile_Reports()
+    {
+        Assert.ThrowsAny<Exception>(() =>
+            TagService.WriteCover(Path.Combine(_dir, "ghost.mp3"), [1, 2, 3]));
+    }
+
+    [Fact]
     public void ReadTags_GarbageFile_ReturnsFallbackTrack()
     {
         var path = Path.Combine(_dir, "garbage.mp3");

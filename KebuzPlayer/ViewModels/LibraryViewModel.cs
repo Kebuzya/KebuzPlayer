@@ -318,6 +318,28 @@ public partial class LibraryViewModel : ViewModelBase, IDisposable
         }
     }
 
+    public async Task WriteCoversToFilesAsync(IReadOnlyList<Track> tracks)
+    {
+        try
+        {
+            StatusText = CoverWriteSummary(await _library.WriteCoversToFilesAsync(tracks));
+        }
+        catch (Exception ex)
+        {
+            StatusText = Loc.F("Common.ErrorWith", ex.Message);
+        }
+    }
+
+    public static string CoverWriteSummary(CoverWriteResult r)
+    {
+        var parts = new List<string>();
+        if (r.Written > 0)         parts.Add(Loc.F("Cover.Write.Written", r.Written));
+        if (r.AlreadyEmbedded > 0) parts.Add(Loc.F("Cover.Write.Embedded", r.AlreadyEmbedded));
+        if (r.NoCover > 0)         parts.Add(Loc.F("Cover.Write.NoCover", r.NoCover));
+        if (r.Failed.Count > 0)    parts.Add(Loc.F("Cover.Write.Failed", r.Failed.Count) + " (" + string.Join("; ", r.Failed) + ")");
+        return Loc.F("Status.CoversWritten", string.Join(", ", parts));
+    }
+
     public async Task SetTracksHiddenAsync(IReadOnlyList<Track> tracks, bool hidden)
     {
         try

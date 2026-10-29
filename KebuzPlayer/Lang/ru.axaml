@@ -18,6 +18,7 @@
     <x:String x:Key="Confirm.DeleteOne">Удалить «{0}» в корзину?</x:String>
     <x:String x:Key="Cover.Hint.Cleared">БУДЕТ БЕЗ ОБЛОЖКИ (НЕ СОХРАНЕНО)</x:String>
     <x:String x:Key="Cover.Hint.Current">ТЕКУЩАЯ ОБЛОЖКА</x:String>
+    <x:String x:Key="Cover.Hint.FileWriteError">СОХРАНЕНО, В ФАЙЛ НЕ ЗАПИСАНО: {0}</x:String>
     <x:String x:Key="Cover.Hint.GenerateError">ОШИБКА ГЕНЕРАЦИИ</x:String>
     <x:String x:Key="Cover.Hint.Generating">ГЕНЕРАЦИЯ…</x:String>
     <x:String x:Key="Cover.Hint.None">ОБЛОЖКИ ПОКА НЕТ</x:String>
@@ -25,11 +26,19 @@
     <x:String x:Key="Cover.Hint.ReadError">ОШИБКА ЧТЕНИЯ</x:String>
     <x:String x:Key="Cover.Hint.SaveError">ОШИБКА СОХРАНЕНИЯ</x:String>
     <x:String x:Key="Cover.Hint.Saved">СОХРАНЕНО</x:String>
+    <x:String x:Key="Cover.Hint.SavedToFile">СОХРАНЕНО И ЗАПИСАНО В ФАЙЛ</x:String>
     <x:String x:Key="Cover.Hint.Variant">ВАРИАНТ {0} (НЕ СОХРАНЁН)</x:String>
     <x:String x:Key="Cover.Next">Следующие варианты</x:String>
     <x:String x:Key="Cover.Original">Оригинал</x:String>
     <x:String x:Key="Cover.OriginalTip">Обложка из тегов файла</x:String>
     <x:String x:Key="Cover.Prev">Предыдущие варианты</x:String>
+    <x:String x:Key="Cover.Write.Embedded">в файле уже своя: {0}</x:String>
+    <x:String x:Key="Cover.Write.Failed">не удалось: {0}</x:String>
+    <x:String x:Key="Cover.Write.NoCover">без обложки: {0}</x:String>
+    <x:String x:Key="Cover.Write.Written">записано: {0}</x:String>
+    <x:String x:Key="Cover.WriteToFile">Записать в файл</x:String>
+    <x:String x:Key="Cover.WriteToFileTip">Записать обложку и в тег аудиофайла, чтобы её видели Проводник и другие плееры. Файл, где уже есть своя обложка, не меняется</x:String>
+    <x:String x:Key="Error.CoverNotStored">формат файла не хранит обложку</x:String>
     <x:String x:Key="Error.DeleteFailed">Не удалось удалить «{0}»: файл занят или нет доступа</x:String>
     <x:String x:Key="Error.FileExistsInFolder">Файл «{0}» уже существует в этой папке</x:String>
     <x:String x:Key="Error.FileExistsInTarget">Файл «{0}» уже есть в целевой папке</x:String>
@@ -188,6 +197,7 @@
     <x:String x:Key="Sort.Duration">Длительность</x:String>
     <x:String x:Key="Sort.Manual">Вручную</x:String>
     <x:String x:Key="Sort.Title">Название</x:String>
+    <x:String x:Key="Status.CoversWritten">Обложки в файлы: {0}</x:String>
     <x:String x:Key="Status.Deleted">Удалено в корзину: {0}</x:String>
     <x:String x:Key="Status.NoChanges">Изменений нет</x:String>
     <x:String x:Key="Status.NothingSelected">Ничего не выбрано</x:String>
@@ -214,6 +224,7 @@
     <x:String x:Key="Track.Show">Показать</x:String>
     <x:String x:Key="Track.ShowInFolder">Показать в папке</x:String>
     <x:String x:Key="Track.Unhide">Показать в библиотеке</x:String>
+    <x:String x:Key="Track.WriteCover">Записать обложку в файл</x:String>
     <x:String x:Key="Transfer.Copy">Копировать</x:String>
     <x:String x:Key="Transfer.Move">Перемещать</x:String>
     <x:String x:Key="Unit.B">Б</x:String>

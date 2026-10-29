@@ -18,6 +18,7 @@
     <x:String x:Key="Confirm.DeleteOne">Delete "{0}" to the Recycle Bin?</x:String>
     <x:String x:Key="Cover.Hint.Cleared">WILL HAVE NO COVER (NOT SAVED)</x:String>
     <x:String x:Key="Cover.Hint.Current">CURRENT COVER</x:String>
+    <x:String x:Key="Cover.Hint.FileWriteError">SAVED, NOT WRITTEN TO FILE: {0}</x:String>
     <x:String x:Key="Cover.Hint.GenerateError">GENERATION ERROR</x:String>
     <x:String x:Key="Cover.Hint.Generating">GENERATING…</x:String>
     <x:String x:Key="Cover.Hint.None">NO COVER YET</x:String>
@@ -25,11 +26,19 @@
     <x:String x:Key="Cover.Hint.ReadError">READ ERROR</x:String>
     <x:String x:Key="Cover.Hint.SaveError">SAVE ERROR</x:String>
     <x:String x:Key="Cover.Hint.Saved">SAVED</x:String>
+    <x:String x:Key="Cover.Hint.SavedToFile">SAVED AND WRITTEN TO FILE</x:String>
     <x:String x:Key="Cover.Hint.Variant">VARIANT {0} (NOT SAVED)</x:String>
     <x:String x:Key="Cover.Next">Next variants</x:String>
     <x:String x:Key="Cover.Original">Original</x:String>
     <x:String x:Key="Cover.OriginalTip">Cover from file tags</x:String>
     <x:String x:Key="Cover.Prev">Previous variants</x:String>
+    <x:String x:Key="Cover.Write.Embedded">file already has its own: {0}</x:String>
+    <x:String x:Key="Cover.Write.Failed">failed: {0}</x:String>
+    <x:String x:Key="Cover.Write.NoCover">no cover: {0}</x:String>
+    <x:String x:Key="Cover.Write.Written">written: {0}</x:String>
+    <x:String x:Key="Cover.WriteToFile">Write to file</x:String>
+    <x:String x:Key="Cover.WriteToFileTip">Also write the cover into the audio file tag, so Explorer and other players show it. A file that already has its own cover is left unchanged</x:String>
+    <x:String x:Key="Error.CoverNotStored">the file format does not store a cover</x:String>
     <x:String x:Key="Error.DeleteFailed">Could not delete "{0}": file is in use or access denied</x:String>
     <x:String x:Key="Error.FileExistsInFolder">File "{0}" already exists in this folder</x:String>
     <x:String x:Key="Error.FileExistsInTarget">File "{0}" already exists in the target folder</x:String>
@@ -188,6 +197,7 @@
     <x:String x:Key="Sort.Duration">Duration</x:String>
     <x:String x:Key="Sort.Manual">Manual</x:String>
     <x:String x:Key="Sort.Title">Title</x:String>
+    <x:String x:Key="Status.CoversWritten">Covers to files: {0}</x:String>
     <x:String x:Key="Status.Deleted">Moved to Recycle Bin: {0}</x:String>
     <x:String x:Key="Status.NoChanges">No changes</x:String>
     <x:String x:Key="Status.NothingSelected">Nothing selected</x:String>
@@ -214,6 +224,7 @@
     <x:String x:Key="Track.Show">Show</x:String>
     <x:String x:Key="Track.ShowInFolder">Show in folder</x:String>
     <x:String x:Key="Track.Unhide">Show in library</x:String>
+    <x:String x:Key="Track.WriteCover">Write cover to file</x:String>
     <x:String x:Key="Transfer.Copy">Copy</x:String>
     <x:String x:Key="Transfer.Move">Move</x:String>
     <x:String x:Key="Unit.B">B</x:String>

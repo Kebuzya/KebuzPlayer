@@ -376,6 +376,18 @@ public partial class FolderExplorerViewModel : ViewModelBase, IDisposable
         }
     }
 
+    public async Task WriteCoversToFilesAsync(IReadOnlyList<Models.Track> tracks)
+    {
+        try
+        {
+            StatusText = LibraryViewModel.CoverWriteSummary(await _library.WriteCoversToFilesAsync(tracks));
+        }
+        catch (Exception ex)
+        {
+            StatusText = Loc.F("Common.ErrorWith", ex.Message);
+        }
+    }
+
     public async Task SetTracksHiddenAsync(IReadOnlyList<Models.Track> tracks, bool hidden)
     {
         try

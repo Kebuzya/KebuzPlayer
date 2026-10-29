@@ -126,6 +126,8 @@
                                       IsVisible="{Binding !Player.IsTrackInLibrary}" />
                             <MenuItem Header="{DynamicResource Track.PreviewCover}" Click="NowPlayingPreviewCover_Click"
                                       IsVisible="{Binding Player.IsTrackInLibrary}" />
+                            <MenuItem Header="{DynamicResource Track.WriteCover}" Click="NowPlayingWriteCover_Click"
+                                      IsVisible="{Binding Player.IsTrackInLibrary}" />
                             <MenuItem Header="{DynamicResource Track.Edit}" Click="NowPlayingEditMetadata_Click" />
                             <MenuItem Header="{DynamicResource Track.AddToPlaylist}" SubmenuOpened="NowPlayingAddToPlaylist_SubmenuOpened"
                                       IsVisible="{Binding Player.IsTrackInLibrary}">

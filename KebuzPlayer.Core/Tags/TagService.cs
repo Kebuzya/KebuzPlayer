@@ -1,9 +1,16 @@
+using KebuzPlayer.Infrastructure;
 using KebuzPlayer.Models;
 
 namespace KebuzPlayer.Tags;
 
 public static class TagService
 {
+    static TagService()
+    {
+        TagLib.Id3v2.Tag.DefaultVersion      = 3;
+        TagLib.Id3v2.Tag.ForceDefaultVersion = true;
+    }
+
     public static Track ReadTags(string filePath)
     {
         try
@@ -34,15 +41,41 @@ public static class TagService
         }
     }
 
-    public static byte[]? TryGetEmbeddedCoverBytes(string filePath)
+    public const string OwnCoverDescription = "KebuzPlayer";
+
+    public static byte[]? TryGetEmbeddedCoverBytes(string filePath, bool skipOwn = false)
     {
         try
         {
             using var tagFile = TagLib.File.Create(filePath);
-            var pic = tagFile.Tag.Pictures.FirstOrDefault();
+            var pic = tagFile.Tag.Pictures.FirstOrDefault(p => !skipOwn || p.Description != OwnCoverDescription);
             return pic?.Data?.Data is { Length: > 0 } bytes ? bytes : null;
         }
         catch { return null; }
+    }
+
+    public static bool HasForeignCover(string filePath, byte[]? ownCover)
+    {
+        try
+        {
+            using var tagFile = TagLib.File.Create(filePath);
+            return tagFile.Tag.Pictures.Any(p =>
+                p.Description != OwnCoverDescription &&
+                p.Data?.Data is { Length: > 0 } bytes &&
+                (ownCover == null || !bytes.AsSpan().SequenceEqual(ownCover)));
+        }
+        catch { return false; }
+    }
+
+    public static void WriteCover(string filePath, byte[] art)
+    {
+        using (var tagFile = TagLib.File.Create(filePath))
+        {
+            tagFile.Tag.Pictures = [new TagLib.Picture(new TagLib.ByteVector(art)) { Type = TagLib.PictureType.FrontCover, Description = OwnCoverDescription }];
+            tagFile.Save();
+        }
+        if (TryGetEmbeddedCoverBytes(filePath) == null)
+            throw new NotSupportedException(CoreText.Format("Error.CoverNotStored", "формат файла не хранит обложку"));
     }
 
     public static void WriteMetadata(string filePath, string title, string artist, string album)
