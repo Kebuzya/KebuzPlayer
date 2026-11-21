@@ -60,7 +60,7 @@ A compact window above all applications, summoned with the media keys: what is p
 - **Playlists** with manual ordering, their own view mode and a collage cover.
 - **Explorer** - two panes with independent roots, file transfer between them and from Windows, playback straight from a folder.
 - **Per-track volume** - ReplayGain from tags plus your own offset, so quiet records stop disappearing.
-- **Seven themes**, each a full palette rather than a dark/light switch.
+- **Eight themes**, including the dark purple and fuchsia Velvet Orchid.
 
 ## Install
 

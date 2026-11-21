@@ -18,6 +18,7 @@ public static class ThemeManager
         new("InkRust", "Ink Rust", false),
         new("SlateScope", "Slate Scope", false),
         new("TerminalGreen", "Terminal Green", false),
+        new("VelvetOrchid", "Velvet Orchid", false),
         new("IvoryMoss", "Ivory Moss", true),
         new("VellumBlue", "Vellum Blue", true),
     ];
