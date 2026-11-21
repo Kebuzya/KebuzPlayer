@@ -1,0 +1,38 @@
+KebuzPlayer third-party notices
+===============================
+
+KebuzPlayer uses TagLibSharp 2.3.0 for audio metadata. TagLibSharp and
+its use are covered by the GNU Lesser General Public License version 2.1.
+Copyright (c) 2006-2007 Brian Nickel. Copyright (c) 2009-2020 Other contributors.
+See licenses/TagLibSharp/LGPL-2.1.txt for the full terms.
+The corresponding source, TagLibSharp-2.3.0-source.zip, is available
+alongside the KebuzPlayer binary downloads for this release:
+https://github.com/Kebuzya/KebuzPlayer/releases
+The archive contains upstream revision b5ae84f2e84087bf160bb0471420200dd2b5d809
+with the upstream test media omitted. The library project is
+src/TaglibSharp/TaglibSharp.csproj inside the archive.
+
+KebuzPlayer использует TagLibSharp 2.3.0 для работы с метаданными аудио.
+На TagLibSharp и её использование распространяется GNU LGPL 2.1.
+Полный текст лицензии находится в licenses/TagLibSharp/LGPL-2.1.txt.
+Архив исходного кода TagLibSharp-2.3.0-source.zip доступен рядом со
+сборками KebuzPlayer на странице этого релиза:
+https://github.com/Kebuzya/KebuzPlayer/releases
+
+Embedded fonts
+--------------
+Archivo and IBM Plex Mono are distributed under the SIL Open Font
+License 1.1. See the respective OFL files in licenses/.
+
+Avalonia.Dialogs includes Roboto Light.
+Copyright 2011 Google Inc. All Rights Reserved.
+Licensed under the Apache License, Version 2.0.
+See licenses/Apache-2.0.txt.
+
+SQLite
+------
+SQLitePCLRaw includes a build of SQLite (e_sqlite3). The original SQLite
+code is in the public domain: https://www.sqlite.org/copyright.html
+
+Packages included in this distribution
+--------------------------------------

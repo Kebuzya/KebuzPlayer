@@ -1,9 +1,12 @@
 param(
     [string]$Iscc,
+    [string]$ReleaseRoot,
+    [string]$TagLibSourceArchive,
     [switch]$AllowDirty
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'Add-ReleaseLicenses.ps1')
 
 $repo    = Split-Path $PSScriptRoot -Parent
 $project = Join-Path $repo 'KebuzPlayer\KebuzPlayer.csproj'
@@ -16,7 +19,11 @@ if (-not $AllowDirty -and (Get-Command git -ErrorAction SilentlyContinue)) {
     if ($dirty) { throw "Uncommitted changes under $repo, commit them or pass -AllowDirty" }
 }
 
-$releaseRoot = Join-Path (Split-Path $repo -Parent) 'release'
+$tagLibVersion = '2.3.0'
+$tagLibSourceHash = 'd154d28547eec98d52ef38838055e0dd716571aaf0e7c18e0df08a99c6a3df33'
+
+if (-not $ReleaseRoot) { $ReleaseRoot = Join-Path (Split-Path $repo -Parent) 'release' }
+$releaseRoot = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ReleaseRoot)
 $stage       = Join-Path $releaseRoot 'stage'
 $out         = Join-Path $releaseRoot $version
 
@@ -30,9 +37,54 @@ if (-not $Iscc) {
 if (-not $Iscc -or -not (Test-Path $Iscc)) { throw 'ISCC.exe (Inno Setup 6) not found, pass -Iscc' }
 
 foreach ($dir in @($stage, $out)) {
-    if (Test-Path $dir) { Remove-Item $dir -Recurse -Force }
+    if (Test-Path -LiteralPath $dir) {
+        $existing = Get-Item -LiteralPath $dir
+        if ($existing.Parent.FullName -ne (Get-Item -LiteralPath $releaseRoot).FullName -or
+            ($existing.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw "Unexpected release directory: $dir"
+        }
+        Remove-Item -LiteralPath $existing.FullName -Recurse -Force
+    }
     New-Item -ItemType Directory -Force $dir | Out-Null
 }
+
+function New-TagLibSourceAsset([string]$inputArchive, [string]$assetPath) {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    Add-Type -AssemblyName System.IO.Compression
+    if (-not $inputArchive) {
+        $inputArchive = Join-Path $stage 'taglib-sharp-upstream.zip'
+        $sourceUrl = 'https://codeload.github.com/mono/taglib-sharp/zip/refs/tags/TaglibSharp-2.3.0.0'
+        Invoke-WebRequest -UseBasicParsing -Uri $sourceUrl -OutFile $inputArchive
+    }
+    if ((Get-FileHash -LiteralPath $inputArchive -Algorithm SHA256).Hash -ne $tagLibSourceHash) {
+        throw 'TagLibSharp upstream source archive has an unexpected SHA-256'
+    }
+
+    $upstream = [IO.Compression.ZipFile]::OpenRead((Resolve-Path -LiteralPath $inputArchive).Path)
+    try {
+        $archive = [IO.Compression.ZipFile]::Open($assetPath, [IO.Compression.ZipArchiveMode]::Create)
+        try {
+            foreach ($entry in $upstream.Entries) {
+                # The media corpus is used only by upstream tests. Keep the source and build files.
+                if ($entry.FullName -match '/src/TaglibSharp\.Tests/(samples|raw-samples)/') { continue }
+                if ($entry.FullName.EndsWith('/')) { continue }
+                $destEntry = $archive.CreateEntry($entry.FullName, [IO.Compression.CompressionLevel]::Optimal)
+                $destEntry.LastWriteTime = $entry.LastWriteTime
+                $inputStream = $entry.Open()
+                try {
+                    $outputStream = $destEntry.Open()
+                    try { $inputStream.CopyTo($outputStream) }
+                    finally { $outputStream.Dispose() }
+                }
+                finally { $inputStream.Dispose() }
+            }
+        }
+        finally { $archive.Dispose() }
+    }
+    finally { $upstream.Dispose() }
+}
+
+New-TagLibSourceAsset $TagLibSourceArchive (Join-Path $out "TagLibSharp-$tagLibVersion-source.zip")
 
 function Publish-Player([string]$name, [string[]]$extra) {
     $dest = Join-Path $stage "$name\KebuzPlayer"
@@ -42,6 +94,7 @@ function Publish-Player([string]$name, [string[]]$extra) {
         "-p:OutDir=$build" -o $dest @extra | Out-Host
     if ($LASTEXITCODE -ne 0) { throw "dotnet publish ($name) failed" }
     Get-ChildItem $dest -Recurse -Filter '*.pdb' | Remove-Item -Force
+    Add-ReleaseLicenses $dest $project $tagLibVersion
     return $dest
 }
 
