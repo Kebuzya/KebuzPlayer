@@ -20,7 +20,7 @@ Your own library, a spectrum visualizer, and cover art generated from the sound 
 
 ## Why
 
-For a collection that lives on a disk: no account, no network, no cloud. The library is a local SQLite database, the settings are a single JSON file. Fully private: the player works offline. The only network request is a check for a new version on GitHub, once a day, and it can be turned off in the settings.
+Your collection lives on your disk. The library is a local SQLite database, and the settings are a single JSON file. Local playback works offline. Internet radio connects to the station you choose. The player checks GitHub for updates once a day, and you can turn this off in the settings.
 
 The key features answer problems I kept running into in other audio players: covers that are not identical grey notes, a visualizer you can put in several places at once, and themes worth sitting in.
 
@@ -41,6 +41,10 @@ A track without a cover does not get a grey note icon. The player analyses the a
 ### A visualizer in four places at once
 
 Fourteen styles, eight colour modes, configured separately for the tab, the strip above the library, the overlay and the Home widget. Frame rate is yours to pick: 15 to 120, or whatever your monitor runs at. F11 or one button takes it fullscreen on the monitor the window is on.
+
+### Internet radio
+
+Open **Radio** next to the tabs, paste a station's direct HTTP or HTTPS MP3 stream URL, and click **Listen**. The visualizer works during live playback. The player remembers each recent station and its individual volume adjustment. Use **Copy stream URL** next to a recent station to share its link, or choose **Generate cover** during playback to make artwork from 30 seconds of the broadcast.
 
 ### A library that does not lose things
 

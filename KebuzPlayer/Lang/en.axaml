@@ -158,6 +158,10 @@
     <x:String x:Key="Radio.Address">Direct MP3 stream URL</x:String>
     <x:String x:Key="Radio.Play">Listen</x:String>
     <x:String x:Key="Radio.Recent">Recent stations</x:String>
+    <x:String x:Key="Radio.CopyAddress">Copy stream URL</x:String>
+    <x:String x:Key="Radio.AddressCopied">Link copied</x:String>
+    <x:String x:Key="Radio.AddressCopyFailed">Could not copy the link</x:String>
+    <x:String x:Key="Radio.RemoveFromRecent">Remove from recent stations</x:String>
     <x:String x:Key="Radio.ConfirmRemoval">Remove “{0}” from recent stations?</x:String>
     <x:String x:Key="Radio.HistorySaveFailed">Could not save recent stations</x:String>
     <x:String x:Key="Radio.Cover.Generate">Generate cover</x:String>

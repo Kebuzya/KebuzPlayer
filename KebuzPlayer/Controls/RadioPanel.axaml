@@ -17,12 +17,16 @@
             </Grid>
 
             <StackPanel Spacing="4" IsVisible="{Binding HasRecentRadioStations}">
-                <TextBlock Classes="mono dim" Text="{DynamicResource Radio.Recent}" FontSize="12" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBlock Classes="mono dim" Text="{DynamicResource Radio.Recent}" FontSize="12" />
+                    <TextBlock Grid.Column="1" x:Name="CopyStatus" Classes="mono dim" FontSize="11"
+                               VerticalAlignment="Center" />
+                </Grid>
                 <ScrollViewer MaxHeight="224" HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl ItemsSource="{Binding RecentRadioStations}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="m:RadioStation">
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6" Margin="0,2">
+                                <Grid ColumnDefinitions="*,34,34" ColumnSpacing="6" Margin="0,2">
                                     <Button Classes="ghost" HorizontalAlignment="Stretch"
                                             HorizontalContentAlignment="Stretch" Click="PlayRecent_Click"
                                             ToolTip.Tip="{Binding Address}">
@@ -43,8 +47,26 @@
                                             </Grid>
                                         </Grid>
                                     </Button>
-                                    <Button Grid.Column="1" Classes="ghost" VerticalAlignment="Center"
-                                            Content="{DynamicResource Common.Delete}" Click="RequestRemoval_Click" />
+                                    <Button Grid.Column="1" Classes="ghost" Padding="0"
+                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                            ToolTip.Tip="{DynamicResource Radio.CopyAddress}"
+                                            AutomationProperties.Name="{DynamicResource Radio.CopyAddress}"
+                                            AutomationProperties.AutomationId="RadioCopyAddress"
+                                            Click="CopyAddress_Click">
+                                        <Path Data="M4,2 V0 H13 V10 H11 M0,4 H9 V14 H0 Z" Stretch="None"
+                                              Fill="{x:Null}" Stroke="{DynamicResource TextDim}" StrokeThickness="1.3" />
+                                    </Button>
+                                    <Button Grid.Column="2" Classes="ghost" Padding="0"
+                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                            ToolTip.Tip="{DynamicResource Radio.RemoveFromRecent}"
+                                            AutomationProperties.Name="{DynamicResource Radio.RemoveFromRecent}"
+                                            AutomationProperties.AutomationId="RadioRemoveRecent"
+                                            Click="RequestRemoval_Click">
+                                        <Path Data="M0,0 L11,11 M11,0 L0,11" Stretch="None"
+                                              Fill="{x:Null}" Stroke="{DynamicResource TextDim}" StrokeThickness="1.5" />
+                                    </Button>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
@@ -55,6 +57,24 @@ public partial class RadioPanel : UserControl
         if (sender is Button { DataContext: RadioStation station }) await PlayAsync(station.Address);
     }
 
+    private async void CopyAddress_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { DataContext: RadioStation station }) return;
+        bool copied = false;
+        try
+        {
+            if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+            {
+                await clipboard.SetTextAsync(station.Address);
+                copied = true;
+            }
+        }
+        catch (ExternalException)
+        {
+        }
+        CopyStatus.Text = Loc.T(copied ? "Radio.AddressCopied" : "Radio.AddressCopyFailed");
+    }
+
     private async void StationThumbnail_Attached(object? sender, VisualTreeAttachmentEventArgs e) =>
         await LoadStationThumbnailAsync(sender);
 
@@ -90,6 +110,7 @@ public partial class RadioPanel : UserControl
     {
         if (sender is not Button { DataContext: RadioStation station }) return;
         _pendingRemoval = station;
+        CopyStatus.Text = null;
         RemovalQuestion.Text = Loc.F("Radio.ConfirmRemoval", station.Name);
         StationsPanel.IsVisible = false;
         RemovalPanel.IsVisible = true;
