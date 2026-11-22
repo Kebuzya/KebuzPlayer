@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
@@ -21,6 +22,7 @@ public partial class PlayerViewModel : ViewModelBase
     private readonly LibraryService _library;
     private readonly JsonSettingsService _settings;
     private readonly Infrastructure.CoverThumbCache _thumbs;
+    private readonly RadioCoverStore _radioCovers;
     private bool _updatingFromPlayback;
     private bool _restoringQueue;
     private DispatcherTimer? _errorTimer;
@@ -35,7 +37,16 @@ public partial class PlayerViewModel : ViewModelBase
     private bool _hasTrack;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowPlayIcon), nameof(ShowPauseIcon), nameof(RadioStatus))]
     private bool _isPlaying;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowPauseIcon))]
+    private bool _isRadio;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowPlayIcon), nameof(RadioStatus))]
+    private bool _isRadioActive;
 
     [ObservableProperty]
     private double _positionSeconds;
@@ -78,10 +89,18 @@ public partial class PlayerViewModel : ViewModelBase
     public bool HasError => !string.IsNullOrEmpty(ErrorText);
 
     public CoverPreviewViewModel Preview { get; }
+    public CoverPreviewViewModel RadioPreview { get; }
     public EqualizerViewModel Equalizer { get; }
 
     public string PositionText => FormatTime(PositionSeconds);
     public string DurationText => FormatTime(DurationSeconds);
+    public bool ShowPlayIcon => !IsPlaying && !IsRadioActive;
+    public bool ShowPauseIcon => IsPlaying && !IsRadio;
+    public string RadioStatus => Loc.T(IsPlaying ? "Radio.Live"
+        : IsRadioActive ? "Radio.Connecting" : "Radio.Stopped");
+    public string LastRadioAddress { get; private set; } = "";
+    public IReadOnlyList<RadioStation> RecentRadioStations => _settings.Current.RecentRadioStations;
+    public bool HasRecentRadioStations => RecentRadioStations.Count > 0;
 
     public PlayerViewModel(AudioService audio, LibraryService library, JsonSettingsService settings,
                            Infrastructure.CoverThumbCache thumbs)
@@ -91,6 +110,12 @@ public partial class PlayerViewModel : ViewModelBase
         _settings = settings;
         _thumbs = thumbs;
         Preview = new CoverPreviewViewModel(library, settings);
+        _radioCovers = new RadioCoverStore(Path.Combine(Infrastructure.PathProvider.LocalDir, "RadioCovers"));
+        RadioPreview = new CoverPreviewViewModel(library, settings, audio, _radioCovers);
+        RadioPreview.CoverSaved += (_, _) =>
+        {
+            if (_audio.RadioAddress is { } address) LoadRadioCover(address.GetLeftPart(UriPartial.Query));
+        };
         Equalizer = new EqualizerViewModel(audio, settings);
 
         _volumePercent = (int)Math.Round(Math.Clamp(settings.Current.MasterVolume, 0f, 1f) * 100);
@@ -105,6 +130,8 @@ public partial class PlayerViewModel : ViewModelBase
         _audio.PositionChanged += OnPositionChanged;
         _audio.GainChanged += (_, _) => UpdateGainDisplay();
         _audio.TrackOpenFailed += OnTrackOpenFailed;
+        _audio.RadioFailed += OnRadioFailed;
+        _audio.RadioStarted += OnRadioStarted;
         _audio.QueueChanged += (_, _) => SaveQueue();
         Preview.CoverSaved += (_, track) =>
         {
@@ -135,6 +162,7 @@ public partial class PlayerViewModel : ViewModelBase
                 catch (JsonException) { }
             }
             var queue = await _library.GetQueueTracksAsync(savedIds);
+            if (_audio.CurrentTrack != null) return;
             var index = queue.FindIndex(t => t.Id == id);
             if (index >= 0)
             {
@@ -167,10 +195,15 @@ public partial class PlayerViewModel : ViewModelBase
 
     private void OnTrackChanged(object? sender, Track track)
     {
-        ShowTrack(track);
+        var isCurrent = ReferenceEquals(_audio.CurrentTrack, track);
+        if (isCurrent)
+        {
+            if (_audio.IsRadio) ClearError(null, EventArgs.Empty);
+            ShowTrack(track);
+        }
         if (track.Id > 0)
         {
-            _settings.Current.LastTrackId = track.Id;
+            if (isCurrent) _settings.Current.LastTrackId = track.Id;
             _ = _library.IncrementPlayCountAsync(track.Id);
             _ = _library.AddPlayHistoryAsync(track.Id);
         }
@@ -178,6 +211,93 @@ public partial class PlayerViewModel : ViewModelBase
 
     private void OnTrackOpenFailed(object? sender, Track track) =>
         ShowError(Loc.F("Player.OpenFailed", Path.GetFileName(track.Path)));
+
+    private void OnRadioFailed(object? sender, Track track)
+    {
+        if (ReferenceEquals(_audio.CurrentTrack, track) && !_audio.IsRadioActive)
+            ShowError(Loc.F("Radio.Failed", track.Title));
+    }
+
+    public Task OpenRadioAsync(string address)
+    {
+        if (RadioStation.ParseAddress(address) is not { } uri)
+        {
+            ShowError(Loc.T("Radio.InvalidAddress"));
+            return Task.CompletedTask;
+        }
+
+        if (_audio.CurrentTrack is { Id: > 0 } && _audio.Duration > TimeSpan.Zero)
+            _settings.Current.LastPositionSeconds = _audio.Position.TotalSeconds;
+
+        LastRadioAddress = uri.GetLeftPart(UriPartial.Query);
+        var gainDb = RecentRadioStations.FirstOrDefault(station => station.Address == LastRadioAddress)?.GainDb ?? 0f;
+        return _audio.PlayRadioAsync(uri, Loc.T("Radio.Title"), gainDb);
+    }
+
+    private void OnRadioStarted(object? sender, RadioStation station)
+    {
+        if (_audio.RadioAddress?.GetLeftPart(UriPartial.Query) == station.Address && _audio.CurrentTrack is { } track)
+            station = station with { GainDb = track.UserGainOffset };
+        if (UpdateRadioHistory(() => _settings.RememberRadioStation(station))) PruneRadioCovers();
+    }
+
+    public bool RemoveRecentRadioStation(RadioStation station)
+    {
+        if (!UpdateRadioHistory(() =>
+        {
+            _settings.RemoveRadioStation(station.Address);
+            if (LastRadioAddress == station.Address) LastRadioAddress = "";
+        }))
+            return false;
+
+        PruneRadioCovers();
+        if (_audio.RadioAddress?.GetLeftPart(UriPartial.Query) == station.Address) LoadRadioCover(station.Address);
+        return true;
+    }
+
+    private void PruneRadioCovers()
+    {
+        try { _radioCovers.KeepOnly(RecentRadioStations.Select(station => station.Address)); }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException) { }
+    }
+
+    public void OpenRadioCover()
+    {
+        if (_audio.RadioAddress is { } address && _audio.CurrentTrack is { } track)
+            RadioPreview.LoadRadio(track, address.GetLeftPart(UriPartial.Query));
+    }
+
+    public Task<Bitmap?> LoadRadioThumbnailAsync(string address) => Task.Run(() =>
+    {
+        try
+        {
+            var bytes = _radioCovers.Load(address);
+            if (bytes is not { Length: > 0 }) return null;
+
+            using var stream = new MemoryStream(bytes);
+            return Bitmap.DecodeToWidth(stream, 64);
+        }
+        catch
+        {
+            return null;
+        }
+    });
+
+    private bool UpdateRadioHistory(Action update)
+    {
+        try
+        {
+            update();
+            OnPropertyChanged(nameof(RecentRadioStations));
+            OnPropertyChanged(nameof(HasRecentRadioStations));
+            return true;
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            ShowError(Loc.T("Radio.HistorySaveFailed"));
+            return false;
+        }
+    }
 
     public void ShowError(string text)
     {
@@ -197,8 +317,10 @@ public partial class PlayerViewModel : ViewModelBase
 
     private void ShowTrack(Track track)
     {
+        IsRadio = _audio.IsRadio;
+        IsRadioActive = _audio.IsRadioActive;
         Title = track.Title;
-        Artist = track.Artist;
+        Artist = IsRadio ? Loc.T("Radio.Title") : track.Artist;
         HasTrack = true;
         _updatingFromPlayback = true;
         PositionSeconds = 0;
@@ -208,38 +330,60 @@ public partial class PlayerViewModel : ViewModelBase
         UpdateGainDisplay();
         IsTrackInLibrary = track.Id > 0;
         IsTrackHidden = track.IsHidden;
-        LoadCover(track.Id);
+        RadioPreview.RadioPlaybackChanged();
+        if (_audio.RadioAddress is { } address) LoadRadioCover(address.GetLeftPart(UriPartial.Query));
+        else LoadCover(track.Id);
+    }
+
+    private void LoadRadioCover(string address)
+    {
+        try { SetCoverImage(_radioCovers.Load(address)); }
+        catch { SetCoverImage(null); }
+    }
+
+    private void SetCoverImage(byte[]? bytes)
+    {
+        var old = CoverImage;
+        if (bytes is { Length: > 0 })
+        {
+            using var ms = new MemoryStream(bytes);
+            CoverImage = new Bitmap(ms);
+        }
+        else
+        {
+            CoverImage = null;
+        }
+        old?.Dispose();
     }
 
     private async void LoadCover(int trackId)
     {
+        if (trackId <= 0)
+        {
+            SetCoverImage(null);
+            return;
+        }
+
         try
         {
             var bytes = await _library.GetCoverArtAsync(trackId);
             if (_audio.CurrentTrack?.Id != trackId) return;
 
-            var old = CoverImage;
-            if (bytes is { Length: > 0 })
-            {
-                using var ms = new MemoryStream(bytes);
-                CoverImage = new Bitmap(ms);
-            }
-            else
-            {
-                CoverImage = null;
-            }
-            old?.Dispose();
+            SetCoverImage(bytes);
         }
         catch
         {
-            CoverImage = null;
+            if (_audio.CurrentTrack?.Id == trackId) SetCoverImage(null);
         }
     }
 
     private void OnPlaybackStateChanged(object? sender, PlaybackState state)
     {
+        IsRadio = _audio.IsRadio;
+        IsRadioActive = _audio.IsRadioActive;
         IsPlaying = state == PlaybackState.Playing;
-        if (state == PlaybackState.Paused && _audio.CurrentTrack != null)
+        RadioPreview.RadioPlaybackChanged();
+        if (state == PlaybackState.Paused && !IsRadio && _audio.CurrentTrack != null)
             _settings.Current.LastPositionSeconds = _audio.Position.TotalSeconds;
         if (_audio.Duration > TimeSpan.Zero)
         {
@@ -271,7 +415,7 @@ public partial class PlayerViewModel : ViewModelBase
         _settings.Current.MasterVolume = volume;
     }
 
-    public Track? CurrentTrack => _audio.CurrentTrack;
+    public Track? CurrentTrack => _audio.IsRadio ? null : _audio.CurrentTrack;
 
     public async Task WriteCurrentCoverToFileAsync()
     {
@@ -288,7 +432,7 @@ public partial class PlayerViewModel : ViewModelBase
 
     public async Task EditCurrentTrackAsync(string fileName, string title, string artist, string album)
     {
-        var track = _audio.CurrentTrack;
+        var track = CurrentTrack;
         if (track == null) return;
 
         try
@@ -320,7 +464,7 @@ public partial class PlayerViewModel : ViewModelBase
 
     public async Task AddCurrentTrackToLibraryAsync()
     {
-        var track = _audio.CurrentTrack;
+        var track = CurrentTrack;
         if (track == null || track.Id > 0) return;
 
         var added = await _library.AddFileAsync(track.Path);
@@ -342,7 +486,7 @@ public partial class PlayerViewModel : ViewModelBase
 
     public void ShowCurrentTrackInFolder()
     {
-        var track = _audio.CurrentTrack;
+        var track = CurrentTrack;
         if (track == null) return;
         try
         {
@@ -355,7 +499,7 @@ public partial class PlayerViewModel : ViewModelBase
 
     public async Task DeleteCurrentTrackAsync()
     {
-        var track = _audio.CurrentTrack;
+        var track = CurrentTrack;
         if (track == null) return;
         try
         {
@@ -374,7 +518,7 @@ public partial class PlayerViewModel : ViewModelBase
 
     public async Task AddCurrentTrackToPlaylistAsync(int playlistId)
     {
-        var track = _audio.CurrentTrack;
+        var track = CurrentTrack;
         if (track == null) return;
         int added = await _library.AddTracksToPlaylistAsync(playlistId, [track.Id]);
         if (added > 0) await RegenPlaylistCoverAsync(playlistId);
@@ -382,7 +526,7 @@ public partial class PlayerViewModel : ViewModelBase
 
     public async Task CreatePlaylistWithCurrentTrackAsync(string name)
     {
-        var track = _audio.CurrentTrack;
+        var track = CurrentTrack;
         if (track == null) return;
         int id = await _library.CreatePlaylistAsync(name);
         await _library.AddTracksToPlaylistAsync(id, [track.Id]);
@@ -400,7 +544,7 @@ public partial class PlayerViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void OpenPreview() => Preview.LoadCommand.Execute(_audio.CurrentTrack);
+    private void OpenPreview() => Preview.LoadCommand.Execute(CurrentTrack);
 
     [RelayCommand]
     private void PlayPause() => _audio.PlayPause();
@@ -439,6 +583,13 @@ public partial class PlayerViewModel : ViewModelBase
         if (track == null) return;
 
         _audio.AdjustTrackGain(track, delta);
+        if (_audio.RadioAddress is { } address)
+        {
+            UpdateRadioHistory(() =>
+                _settings.SetRadioStationGain(address.GetLeftPart(UriPartial.Query), track.UserGainOffset));
+            return;
+        }
+
         try { await _library.UpdateTrackGainAsync(track.Id, track.UserGainOffset); }
         catch { }
     }
@@ -452,6 +603,8 @@ public partial class PlayerViewModel : ViewModelBase
     public void RefreshTexts()
     {
         if (!HasTrack) Title = Loc.T("Player.NoTrack");
+        if (IsRadio) Artist = Loc.T("Radio.Title");
+        OnPropertyChanged(nameof(RadioStatus));
         UpdateGainDisplay();
         Equalizer.RefreshTexts();
     }

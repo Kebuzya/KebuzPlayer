@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:m="using:KebuzPlayer.Models"
+             xmlns:vm="using:KebuzPlayer.ViewModels"
+             x:Class="KebuzPlayer.Controls.RadioPanel"
+             x:DataType="vm:PlayerViewModel"
+             Width="368" Margin="4">
+    <Panel>
+        <StackPanel x:Name="StationsPanel" Spacing="10">
+            <TextBlock Text="{DynamicResource Radio.Address}" FontSize="12" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBox x:Name="AddressBox" FontSize="13" KeyDown="AddressBox_KeyDown"
+                         AutomationProperties.Name="{DynamicResource Radio.Address}"
+                         AutomationProperties.AutomationId="RadioAddress" />
+                <Button Grid.Column="1" Classes="primary" VerticalAlignment="Stretch"
+                        Content="{DynamicResource Radio.Play}" Click="PlayAddress_Click" />
+            </Grid>
+
+            <StackPanel Spacing="4" IsVisible="{Binding HasRecentRadioStations}">
+                <TextBlock Classes="mono dim" Text="{DynamicResource Radio.Recent}" FontSize="12" />
+                <ScrollViewer MaxHeight="224" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding RecentRadioStations}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="m:RadioStation">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6" Margin="0,2">
+                                    <Button Classes="ghost" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Stretch" Click="PlayRecent_Click"
+                                            ToolTip.Tip="{Binding Address}">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                            <Border Width="32" Height="32" VerticalAlignment="Center"
+                                                    Background="{DynamicResource Inset2}"
+                                                    BorderBrush="{DynamicResource BorderSoft}" BorderThickness="1">
+                                                <Image Stretch="UniformToFill"
+                                                       AttachedToVisualTree="StationThumbnail_Attached"
+                                                       DataContextChanged="StationThumbnail_Changed"
+                                                       DetachedFromVisualTree="StationThumbnail_Detached" />
+                                            </Border>
+                                            <Grid Grid.Column="1" RowDefinitions="Auto,Auto" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontSize="12"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Row="1" Classes="mono dim" Text="{Binding Address}"
+                                                           FontSize="11" TextTrimming="CharacterEllipsis" />
+                                            </Grid>
+                                        </Grid>
+                                    </Button>
+                                    <Button Grid.Column="1" Classes="ghost" VerticalAlignment="Center"
+                                            Content="{DynamicResource Common.Delete}" Click="RequestRemoval_Click" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel x:Name="RemovalPanel" Spacing="10" IsVisible="False">
+            <TextBlock x:Name="RemovalQuestion" FontSize="12" TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button x:Name="CancelRemovalButton" Classes="ghost" Content="{DynamicResource Common.Cancel}"
+                        Click="CancelRemoval_Click" />
+                <Button Classes="primary" Content="{DynamicResource Common.Delete}" Click="ConfirmRemoval_Click" />
+            </StackPanel>
+        </StackPanel>
+    </Panel>
+</UserControl>

@@ -12,6 +12,8 @@ public class AudioService : IDisposable
 {
     private readonly SynchronizationContext _sync;
     private WaveStream?              _fileReader;
+    private Mp3RadioStream?          _radioStream;
+    private Uri?                     _radioAddress;
     private FftSampleProvider?       _fftProvider;
     private VolumeSampleProvider?    _volumeProvider;
     private WaveOutEvent?            _outputDevice;
@@ -28,6 +30,9 @@ public class AudioService : IDisposable
     public IReadOnlyList<Track> Queue => _queue;
 
     public Track? CurrentTrack { get; private set; }
+    public Uri? RadioAddress => _radioAddress;
+    public bool IsRadio => _radioAddress != null;
+    public bool IsRadioActive => _radioStream != null;
     public PlaybackState State => _outputDevice?.PlaybackState ?? PlaybackState.Stopped;
     public TimeSpan Position => _fileReader?.CurrentTime ?? TimeSpan.Zero;
     public TimeSpan Duration => _fileReader?.TotalTime ?? TimeSpan.Zero;
@@ -41,6 +46,8 @@ public class AudioService : IDisposable
     public event EventHandler? TrackEnded;
     public event EventHandler? GainChanged;
     public event EventHandler<Track>? TrackOpenFailed;
+    public event EventHandler<Track>? RadioFailed;
+    public event EventHandler<RadioStation>? RadioStarted;
     public event EventHandler? QueueChanged;
 
     public AudioService()
@@ -53,6 +60,7 @@ public class AudioService : IDisposable
     public void Play(Track track)
     {
         DisposePlayback();
+        _radioAddress = null;
         CurrentTrack = track;
 
         try
@@ -77,13 +85,70 @@ public class AudioService : IDisposable
     private void OpenOutput(Track track)
     {
         _fileReader     = AudioReaderFactory.Open(track.Path);
-        _fftProvider    = new FftSampleProvider(new EqualizerSampleProvider(_fileReader.ToSampleProvider(), Equalizer));
+        OpenOutput(_fileReader.ToSampleProvider());
+    }
+
+    private void OpenOutput(ISampleProvider source)
+    {
+        _fftProvider    = new FftSampleProvider(new EqualizerSampleProvider(source, Equalizer));
         _volumeProvider = new VolumeSampleProvider(_fftProvider);
         ApplyVolume();
 
         _outputDevice = new WaveOutEvent();
         _outputDevice.Init(new SampleToWaveProvider(_volumeProvider));
         _outputDevice.PlaybackStopped += OnPlaybackStopped;
+    }
+
+    public async Task PlayRadioAsync(Uri address, string label, float gainDb = 0f)
+    {
+        DisposePlayback();
+        _radioAddress = address;
+        var track = new Track
+        {
+            Title = address.Host,
+            Artist = label,
+            UserGainOffset = RadioStation.NormalizeGain(gainDb),
+        };
+        CurrentTrack = track;
+        var stream = new Mp3RadioStream(address);
+        _radioStream = stream;
+        RaiseOnSync(TrackChanged, track);
+        RaiseOnSync(PlaybackStateChanged, PlaybackState.Stopped);
+
+        try
+        {
+            await stream.Ready;
+            if (!ReferenceEquals(_radioStream, stream)) return;
+
+            if (!string.IsNullOrWhiteSpace(stream.StationName))
+            {
+                track.Title = stream.StationName;
+                RaiseOnSync(TrackChanged, track);
+            }
+            OpenOutput(stream.ToSampleProvider());
+            _outputDevice!.Play();
+            RaiseOnSync(PlaybackStateChanged, PlaybackState.Playing);
+            RaiseOnSync(RadioStarted, new RadioStation(address.GetLeftPart(UriPartial.Query), track.Title, track.UserGainOffset));
+        }
+        catch
+        {
+            if (ReferenceEquals(_radioStream, stream)) FinishRadio();
+        }
+    }
+
+    private void FinishRadio()
+    {
+        DisposePlayback();
+        RaiseOnSync(PlaybackStateChanged, PlaybackState.Stopped);
+        if (CurrentTrack is { } track)
+            RaiseOnSync(RadioFailed, track);
+    }
+
+    public Task<WaveStream> CaptureRadioAsync(int seconds, IProgress<int> progress, CancellationToken cancellation)
+    {
+        if (_radioStream is not { } stream || State != PlaybackState.Playing)
+            throw new InvalidOperationException();
+        return stream.CaptureAsync(seconds, progress, cancellation);
     }
 
     private bool HasNext =>
@@ -97,12 +162,17 @@ public class AudioService : IDisposable
             _failedInRow = 0;
             return;
         }
-        _sync.Post(_ => Next(), null);
+        var failedTrack = CurrentTrack;
+        _sync.Post(_ =>
+        {
+            if (!IsRadio && ReferenceEquals(CurrentTrack, failedTrack)) Next();
+        }, null);
     }
 
     public void RestoreTrackState(Track track, TimeSpan position = default)
     {
         if (!ReferenceEquals(CurrentTrack, track)) DisposePlayback();
+        _radioAddress = null;
         CurrentTrack = track;
         _resumeAt = position;
     }
@@ -157,6 +227,13 @@ public class AudioService : IDisposable
 
     public void PlayPause()
     {
+        if (_radioAddress is { } address)
+        {
+            if (IsRadioActive) Stop();
+            else if (CurrentTrack is { } station) _ = PlayRadioAsync(address, station.Artist, station.UserGainOffset);
+            return;
+        }
+
         if (_outputDevice == null)
         {
             if (CurrentTrack == null) return;
@@ -188,6 +265,13 @@ public class AudioService : IDisposable
 
     public void Stop()
     {
+        if (IsRadio)
+        {
+            DisposePlayback();
+            RaiseOnSync(PlaybackStateChanged, PlaybackState.Stopped);
+            return;
+        }
+
         _outputDevice?.Stop();
         _positionTimer!.Change(Timeout.Infinite, Timeout.Infinite);
         RaiseOnSync(PlaybackStateChanged, PlaybackState.Stopped);
@@ -202,14 +286,14 @@ public class AudioService : IDisposable
 
     public void Next()
     {
-        if (_queue.Count == 0) return;
+        if (IsRadio || _queue.Count == 0) return;
         _currentOrderIndex = (_currentOrderIndex + 1) % _playOrder.Length;
         Play(_queue[_playOrder[_currentOrderIndex]]);
     }
 
     public void Previous()
     {
-        if (_queue.Count == 0) return;
+        if (IsRadio || _queue.Count == 0) return;
         if (Position.TotalSeconds > 3)
         {
             SeekTo(TimeSpan.Zero);
@@ -308,28 +392,39 @@ public class AudioService : IDisposable
 
     private void OnPlaybackStopped(object? sender, StoppedEventArgs e)
     {
-        _positionTimer!.Change(Timeout.Infinite, Timeout.Infinite);
-
-        if (e.Exception != null)
+        _sync.Post(_ =>
         {
-            _sync.Post(_ =>
+            if (!ReferenceEquals(sender, _outputDevice)) return;
+            if (IsRadio)
             {
-                RaiseOnSync(PlaybackStateChanged, PlaybackState.Stopped);
+                FinishRadio();
+                return;
+            }
+
+            _positionTimer!.Change(Timeout.Infinite, Timeout.Infinite);
+            if (e.Exception != null)
+            {
+                PlaybackStateChanged?.Invoke(this, PlaybackState.Stopped);
                 SkipAfterFailure();
-            }, null);
-            return;
-        }
+                return;
+            }
 
-        if (RepeatMode == RepeatMode.RepeatOne)
-        {
-            _sync.Post(_ => { SeekTo(TimeSpan.Zero); _outputDevice?.Play(); _positionTimer!.Change(250, 250); }, null);
-            return;
-        }
-
-        if (HasNext)
-            _sync.Post(_ => Next(), null);
-        else
-            _sync.Post(_ => { RaiseOnSync(PlaybackStateChanged, PlaybackState.Stopped); _sync.Post(_ => TrackEnded?.Invoke(this, EventArgs.Empty), null); }, null);
+            if (RepeatMode == RepeatMode.RepeatOne)
+            {
+                SeekTo(TimeSpan.Zero);
+                _outputDevice?.Play();
+                _positionTimer!.Change(250, 250);
+            }
+            else if (HasNext)
+            {
+                Next();
+            }
+            else
+            {
+                PlaybackStateChanged?.Invoke(this, PlaybackState.Stopped);
+                TrackEnded?.Invoke(this, EventArgs.Empty);
+            }
+        }, null);
     }
 
     private void OnPositionTick(object? _)
@@ -350,6 +445,8 @@ public class AudioService : IDisposable
 
     private void DisposePlayback()
     {
+        _radioStream?.Dispose();
+        _radioStream = null;
         _positionTimer?.Change(Timeout.Infinite, Timeout.Infinite);
         if (_outputDevice != null)
         {

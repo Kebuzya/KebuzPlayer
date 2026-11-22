@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using KebuzPlayer.Models;
 
 namespace KebuzPlayer.Services;
 
@@ -49,10 +50,12 @@ public sealed class UserSettings
     public bool EqualizerEnabled { get; set; }
     public EqualizerPreset EqualizerPreset { get; set; } = EqualizerPreset.Flat;
     public float[] EqualizerCustomGains { get; set; } = new float[EqualizerPresets.BandCount];
+    public List<RadioStation> RecentRadioStations { get; set; } = new();
 }
 
 public sealed class JsonSettingsService
 {
+    private const int RecentRadioLimit = 20;
     private static readonly JsonSerializerOptions Options = new()
     {
         WriteIndented = true,
@@ -110,7 +113,67 @@ public sealed class JsonSettingsService
         s.PlaylistSortModes ??= new();
         s.PlaylistSortDescending ??= new();
         s.FolderOrder ??= new();
+        s.RecentRadioStations = SanitizeRadioStations(s.RecentRadioStations);
         return s;
+    }
+
+    private static List<RadioStation> SanitizeRadioStations(List<RadioStation>? stations)
+    {
+        var recent = new List<RadioStation>();
+        var addresses = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var station in stations ?? [])
+        {
+            if (RadioStation.ParseAddress(station?.Address) is not { } uri) continue;
+            var address = uri.GetLeftPart(UriPartial.Query);
+            if (!addresses.Add(address)) continue;
+            var name = string.IsNullOrWhiteSpace(station!.Name) ? uri.Host : station.Name.Trim();
+            recent.Add(new RadioStation(address, name, RadioStation.NormalizeGain(station.GainDb)));
+            if (recent.Count == RecentRadioLimit) break;
+        }
+        return recent;
+    }
+
+    public void RememberRadioStation(RadioStation station)
+    {
+        var current = Current.RecentRadioStations;
+        if (current.Count > 0 && current[0] == station) return;
+        var recent = current.Where(item => item.Address != station.Address).Take(RecentRadioLimit - 1).ToList();
+        recent.Insert(0, station);
+        SaveRadioStations(recent);
+    }
+
+    public void RemoveRadioStation(string address)
+    {
+        var current = Current.RecentRadioStations;
+        var recent = current.Where(station => station.Address != address).ToList();
+        if (recent.Count != current.Count) SaveRadioStations(recent);
+    }
+
+    public void SetRadioStationGain(string address, float gainDb)
+    {
+        var current = Current.RecentRadioStations;
+        var index = current.FindIndex(station => station.Address == address);
+        if (index < 0) return;
+
+        var station = current[index];
+        gainDb = RadioStation.NormalizeGain(gainDb);
+        if (station.GainDb == gainDb) return;
+
+        var recent = new List<RadioStation>(current);
+        recent[index] = station with { GainDb = gainDb };
+        SaveRadioStations(recent);
+    }
+
+    private void SaveRadioStations(List<RadioStation> recent)
+    {
+        var previous = Current.RecentRadioStations;
+        Current.RecentRadioStations = recent;
+        try { Save(); }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            Current.RecentRadioStations = previous;
+            throw;
+        }
     }
 
     public void Save()

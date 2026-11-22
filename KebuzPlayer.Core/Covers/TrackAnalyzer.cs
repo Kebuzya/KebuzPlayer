@@ -18,13 +18,22 @@ public static class TrackAnalyzer
 
     public static TrackFeatures Analyze(string filePath)
     {
-        try { return AnalyzeCore(filePath); }
+        try
+        {
+            using var reader = new AudioFileReader(filePath);
+            return AnalyzeCore(reader, CancellationToken.None);
+        }
         catch { return TrackFeatures.Default; }
     }
 
-    private static TrackFeatures AnalyzeCore(string filePath)
+    public static TrackFeatures Analyze(WaveStream reader, CancellationToken cancellation)
     {
-        using var reader = new AudioFileReader(filePath);
+        return AnalyzeCore(reader, cancellation);
+    }
+
+    private static TrackFeatures AnalyzeCore(WaveStream reader, CancellationToken cancellation)
+    {
+        var samples = reader as ISampleProvider ?? reader.ToSampleProvider();
         int ch = reader.WaveFormat.Channels;
         int sampleRate = reader.WaveFormat.SampleRate;
         int bytesPerFrame = reader.WaveFormat.BitsPerSample / 8 * ch;
@@ -48,6 +57,7 @@ public static class TrackAnalyzer
 
         for (int s = 0; s < SegmentCount; s++)
         {
+            cancellation.ThrowIfCancellationRequested();
             double frac = 0.04 + s * (0.92 / (SegmentCount - 1));
             long start = (long)(totalFrames * frac) - segLenFrames / 2;
             start = Math.Clamp(start, 0, Math.Max(0, totalFrames - segLenFrames));
@@ -55,7 +65,7 @@ public static class TrackAnalyzer
             int wantFrames = (int)Math.Min(segLenFrames, totalFrames - start);
             var interleaved = new float[wantFrames * ch];
             reader.Position = start * bytesPerFrame;
-            int readSamples = ReadFully(reader, interleaved);
+            int readSamples = ReadFully(samples, interleaved);
             int frames = readSamples / ch;
             int numFft = frames < FftSize ? 0 : (frames - FftSize) / Hop + 1;
             if (numFft > FramesPerSegment) numFft = FramesPerSegment;
@@ -383,7 +393,7 @@ public static class TrackAnalyzer
         return displaySpec;
     }
 
-    private static int ReadFully(AudioFileReader reader, float[] buffer)
+    private static int ReadFully(ISampleProvider reader, float[] buffer)
     {
         int total = 0;
         while (total < buffer.Length)

@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="KebuzPlayer.Core.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NAudio" Version="2.2.*" />
     <PackageReference Include="NAudio.WinForms" Version="2.2.1" ExcludeAssets="all" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.*" />

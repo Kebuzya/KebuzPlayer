@@ -45,18 +45,22 @@
 
                             <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,4,0,0">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                    <Button Classes="ctrl" Width="24" Height="24" Command="{Binding Player.PreviousCommand}">
+                                    <Button Classes="ctrl" Width="24" Height="24" Command="{Binding Player.PreviousCommand}"
+                                            IsEnabled="{Binding !Player.IsRadio}">
                                         <Path Data="M8,0 L8,10 1,5 Z M0,0 L1.5,0 1.5,10 0,10 Z" Stretch="None" />
                                     </Button>
                                     <Button Classes="play" Width="26" Height="26" Command="{Binding Player.PlayPauseCommand}">
                                         <Panel>
                                             <Path Data="M0,0 L10,6 0,12 Z" Stretch="None"
-                                                  IsVisible="{Binding !Player.IsPlaying}" />
+                                                  IsVisible="{Binding Player.ShowPlayIcon}" />
                                             <Path Data="M0,0 L3,0 3,12 0,12 Z M6,0 L9,0 9,12 6,12 Z" Stretch="None"
-                                                  IsVisible="{Binding Player.IsPlaying}" />
+                                                  IsVisible="{Binding Player.ShowPauseIcon}" />
+                                            <Path Data="M0,0 L10,0 10,10 0,10 Z" Stretch="None"
+                                                  IsVisible="{Binding Player.IsRadioActive}" />
                                         </Panel>
                                     </Button>
-                                    <Button Classes="ctrl" Width="24" Height="24" Command="{Binding Player.NextCommand}">
+                                    <Button Classes="ctrl" Width="24" Height="24" Command="{Binding Player.NextCommand}"
+                                            IsEnabled="{Binding !Player.IsRadio}">
                                         <Path Data="M0,0 L0,10 7,5 Z M6.5,0 L8,0 8,10 6.5,10 Z" Stretch="None" />
                                     </Button>
 
@@ -83,7 +87,8 @@
                         </StackPanel>
                     </Grid>
 
-                    <StackPanel Grid.Row="1" Spacing="1" Margin="0,6,0,7">
+                    <StackPanel Grid.Row="1" Spacing="1" Margin="0,6,0,7"
+                                IsVisible="{Binding !Player.IsRadio}">
                         <c:KebuzSlider Classes="thin"
                                 Minimum="0" Maximum="{Binding Player.DurationSeconds}"
                                 Value="{Binding Player.PositionSeconds}" />
@@ -92,6 +97,9 @@
                             <TextBlock Grid.Column="2" Classes="mono dim" Text="{Binding Player.DurationText}" FontSize="11" />
                         </Grid>
                     </StackPanel>
+
+                    <TextBlock Grid.Row="1" Classes="mono dim" Margin="0,6,0,7" FontSize="11"
+                               Text="{Binding Player.RadioStatus}" IsVisible="{Binding Player.IsRadio}" />
 
                     <Border Grid.Row="2" Classes="overlayViz" Margin="-12,0,-12,0" Padding="12,5,12,6"
                             Classes.vivid="{Binding IsVivid}"

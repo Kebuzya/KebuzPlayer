@@ -1,8 +1,10 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using KebuzPlayer.Infrastructure;
@@ -10,6 +12,7 @@ using KebuzPlayer.Models;
 using KebuzPlayer.Services;
 using KebuzPlayer.Tags;
 using KebuzPlayer.Lang;
+using NAudio.Wave;
 
 namespace KebuzPlayer.ViewModels;
 
@@ -39,6 +42,20 @@ public partial class CoverPreviewViewModel : ViewModelBase
 
     private readonly LibraryService _library;
     private readonly JsonSettingsService _settings;
+    private readonly AudioService? _radio;
+    private readonly RadioCoverStore? _radioCovers;
+    private CancellationTokenSource? _radioWork;
+    private DispatcherTimer? _dotsTimer;
+    private string? _radioAddress;
+    private int _radioRevision;
+    private bool _capturingRadioCover;
+    private RadioCoverVariants? _radioVariants;
+
+    public bool IsRadio => _radio != null;
+    public bool CanBrowseVariants => !IsRadio || IsGridVisible;
+    public bool IsRadioBusy => IsRadio && IsBusy;
+    public bool HasSavedRadioVariants => _radioVariants != null && !IsGridVisible;
+    public string RadioCaptureLabel => Loc.T(_radioVariants == null ? "Radio.Cover.Generate" : "Radio.Cover.RecordAgain");
 
     public ObservableCollection<CoverVariantItem> Variants { get; } = [];
 
@@ -49,10 +66,16 @@ public partial class CoverPreviewViewModel : ViewModelBase
     private string _previewHint = "";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRadioBusy))]
+    [NotifyCanExecuteChangedFor(nameof(CaptureRadioCoverCommand), nameof(RestoreRadioVariantsCommand))]
     private bool _isBusy;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanBrowseVariants), nameof(HasSavedRadioVariants))]
     private bool _isGridVisible;
+
+    [ObservableProperty]
+    private string _busyDots = "";
 
     [ObservableProperty]
     private bool _canWriteToFile;
@@ -69,10 +92,13 @@ public partial class CoverPreviewViewModel : ViewModelBase
 
     public event EventHandler<Track>? CoverSaved;
 
-    public CoverPreviewViewModel(LibraryService library, JsonSettingsService settings)
+    public CoverPreviewViewModel(LibraryService library, JsonSettingsService settings,
+                                 AudioService? radio = null, RadioCoverStore? radioCovers = null)
     {
         _library = library;
         _settings = settings;
+        _radio = radio;
+        _radioCovers = radioCovers;
     }
 
     private int BatchSize =>
@@ -113,53 +139,192 @@ public partial class CoverPreviewViewModel : ViewModelBase
         PreviousVariantCommand.NotifyCanExecuteChanged();
     }
 
+    public void LoadRadio(Track track, string address)
+    {
+        if (_radioAddress == address && ReferenceEquals(_target, track)) return;
+        ResetRadio();
+        _target = track;
+        _radioAddress = address;
+        try
+        {
+            var bytes = _radioCovers!.Load(address);
+            SetPreview(bytes);
+            _radioVariants = _radioCovers.LoadVariants(address);
+            PreviewHint = Loc.T(bytes is { Length: > 0 } ? "Cover.Hint.Current" : "Cover.Hint.None");
+        }
+        catch
+        {
+            PreviewHint = Loc.T("Cover.Hint.ReadError");
+        }
+        CaptureRadioCoverCommand.NotifyCanExecuteChanged();
+        RefreshRadioVariants();
+    }
+
+    private void ResetRadio()
+    {
+        _radioRevision++;
+        _radioWork?.Cancel();
+        _dotsTimer?.Stop();
+        BusyDots = "";
+        _radioAddress = null;
+        _target = null;
+        _features = null;
+        _radioVariants = null;
+        _batchStart = 0;
+        _batchCount = 0;
+        _pendingBytes = null;
+        ClearVariants();
+        SetPreview(null);
+        PreviewHint = "";
+        PreviousVariantCommand.NotifyCanExecuteChanged();
+        CaptureRadioCoverCommand.NotifyCanExecuteChanged();
+        RefreshRadioVariants();
+    }
+
+    public void RadioPlaybackChanged()
+    {
+        if (_target != null)
+        {
+            var current = _radio!.CurrentTrack;
+            if (_radioAddress != _radio.RadioAddress?.GetLeftPart(UriPartial.Query) || current == null)
+                ResetRadio();
+            else
+            {
+                if (!ReferenceEquals(_target, current)
+                    || (_capturingRadioCover && _radio.State != PlaybackState.Playing))
+                    _radioWork?.Cancel();
+                _target = current;
+            }
+        }
+        CaptureRadioCoverCommand.NotifyCanExecuteChanged();
+    }
+
+    private void RefreshRadioVariants()
+    {
+        OnPropertyChanged(nameof(HasSavedRadioVariants));
+        OnPropertyChanged(nameof(RadioCaptureLabel));
+        RestoreRadioVariantsCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool CanCaptureRadioCover() =>
+        !IsBusy && _target != null && ReferenceEquals(_target, _radio?.CurrentTrack)
+        && _radio?.State == PlaybackState.Playing;
+
+    [RelayCommand(CanExecute = nameof(CanCaptureRadioCover))]
+    private Task CaptureRadioCoverAsync() => RenderBatchAsync(1, captureRadio: true);
+
+    private bool CanRestoreRadioVariants() => _radioVariants != null && !IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanRestoreRadioVariants))]
+    private Task RestoreRadioVariantsAsync() => RenderBatchAsync(_radioVariants!.FirstVariant);
+
+    [RelayCommand]
+    private void CancelRadioCover() => _radioWork?.Cancel();
+
+    private void StartRadioAnimation()
+    {
+        BusyDots = ".";
+        if (_dotsTimer == null)
+        {
+            _dotsTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(350) };
+            _dotsTimer.Tick += (_, _) => BusyDots = BusyDots.Length == 3 ? "." : BusyDots + ".";
+        }
+        _dotsTimer.Start();
+    }
+
     [RelayCommand]
     private Task RegenerateVariantAsync() =>
         RenderBatchAsync(_batchStart == 0 ? 1 : _batchStart + _batchCount);
 
     [RelayCommand(CanExecute = nameof(CanStepBack))]
     private Task PreviousVariantAsync() =>
-        RenderBatchAsync(Math.Max(1, _batchStart - BatchSize));
+        RenderBatchAsync(Math.Max(1, _batchStart - (_radioVariants?.BatchSize ?? BatchSize)));
 
     private bool CanStepBack => _batchStart > 1;
 
-    private async Task RenderBatchAsync(int start)
+    private async Task RenderBatchAsync(int start, bool captureRadio = false)
     {
         var track = _target;
-        if (track == null || IsBusy || start < 1) return;
+        var radioVariants = captureRadio ? null : _radioVariants;
+        if (track == null || IsBusy || start < 1 || (IsRadio && !captureRadio && radioVariants == null)) return;
 
+        using var work = IsRadio ? new CancellationTokenSource() : null;
+        _radioWork = work;
+        var cancellation = work?.Token ?? CancellationToken.None;
+        var revision = _radioRevision;
+        bool IsCurrent() => !IsRadio || (revision == _radioRevision && ReferenceEquals(track, _radio!.CurrentTrack));
+        _capturingRadioCover = captureRadio;
         IsBusy = true;
         PreviewHint = Loc.T("Cover.Hint.Generating");
+        if (IsRadio) StartRadioAnimation();
         try
         {
-            var chaos = await _library.GetCoverChaosAsync();
-            int count = BatchSize;
+            var features = IsRadio ? radioVariants?.Features : _features;
+            if (captureRadio)
+            {
+                const int seconds = 30;
+                var recording = true;
+                PreviewHint = Loc.F("Radio.Cover.Recording", 0, seconds);
+                var progress = new Progress<int>(second =>
+                {
+                    if (recording && !cancellation.IsCancellationRequested && IsCurrent())
+                        PreviewHint = Loc.F("Radio.Cover.Recording", second, seconds);
+                });
+                using (var clip = await _radio!.CaptureRadioAsync(seconds, progress, cancellation))
+                {
+                    recording = false;
+                    cancellation.ThrowIfCancellationRequested();
+                    PreviewHint = Loc.T("Radio.Cover.Analyzing");
+                    features = await Task.Run(() => TrackAnalyzer.Analyze(clip, cancellation), cancellation);
+                }
+            }
+            if (IsRadio) PreviewHint = Loc.T("Radio.Cover.Rendering");
+
+            var chaos = radioVariants?.Chaos ?? await _library.GetCoverChaosAsync();
+            int count = radioVariants?.BatchSize ?? BatchSize;
+            var seedTrack = IsRadio ? new Track { Title = radioVariants?.Title ?? track.Title,
+                                                   Artist = radioVariants?.Artist ?? track.Artist } : track;
             double cell = Math.Floor(GridSide / (count switch { 1 => 1, 4 => 2, 9 => 3, _ => 4 }));
 
-            var items = await Task.Run(() =>
+            var (analyzed, items) = await Task.Run(() =>
             {
-                _features ??= TrackAnalyzer.Analyze(track.Path);
-                var f = _features;
-                var result = new CoverVariantItem[count];
-                for (int i = 0; i < count; i++)
+                var f = features ?? TrackAnalyzer.Analyze(track.Path);
+                var result = new System.Collections.Generic.List<CoverVariantItem>(count);
+                try
                 {
-                    int variant = start + i;
-                    byte[] bytes;
-                    if (f.IsFallback)
+                    for (int i = 0; i < count; i++)
                     {
-                        bytes = MetaCoverArtGenerator.Generate(track, variant, chaos);
+                        cancellation.ThrowIfCancellationRequested();
+                        int variant = start + i;
+                        byte[] bytes;
+                        if (f.IsFallback)
+                        {
+                            bytes = MetaCoverArtGenerator.Generate(seedTrack, variant, chaos);
+                        }
+                        else
+                        {
+                            int seed = StableHash.Combine(CoverArtGenerator.FeatureSeed(f), variant);
+                            var style = CoverArtGenerator.AutoSelectStyle(f, seed, chaos);
+                            bytes = CoverArtGenerator.Generate(style, seed, f, chaos);
+                        }
+                        result.Add(new CoverVariantItem(variant, bytes, cell));
                     }
-                    else
-                    {
-                        int seed = StableHash.Combine(CoverArtGenerator.FeatureSeed(f), variant);
-                        var style = CoverArtGenerator.AutoSelectStyle(f, seed, chaos);
-                        bytes = CoverArtGenerator.Generate(style, seed, f, chaos);
-                    }
-                    result[i] = new CoverVariantItem(variant, bytes, cell);
+                    return (f, result);
                 }
-                return result;
-            });
+                catch
+                {
+                    foreach (var item in result) item.Image.Dispose();
+                    throw;
+                }
+            }, cancellation);
 
+            if (!IsCurrent() || cancellation.IsCancellationRequested)
+            {
+                foreach (var item in items) item.Image.Dispose();
+                cancellation.ThrowIfCancellationRequested();
+                return;
+            }
+            _features = analyzed;
             _batchStart = start;
             _batchCount = count;
             ClearVariants();
@@ -167,13 +332,31 @@ public partial class CoverPreviewViewModel : ViewModelBase
                 Variants.Add(item);
             IsGridVisible = true;
             SelectVariant(Variants[0]);
+            if (IsRadio && _radioAddress is { } address)
+            {
+                _radioVariants = new RadioCoverVariants(analyzed, chaos, count, start, seedTrack.Title, seedTrack.Artist);
+                RefreshRadioVariants();
+                try { _radioCovers!.SaveVariants(address, _radioVariants); }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException)
+                {
+                    PreviewHint = Loc.T("Radio.Cover.VariantsSaveError");
+                }
+            }
+        }
+        catch (OperationCanceledException) when (IsRadio)
+        {
+            if (IsCurrent()) PreviewHint = Loc.T("Radio.Cover.Canceled");
         }
         catch
         {
-            PreviewHint = Loc.T("Cover.Hint.GenerateError");
+            if (IsCurrent()) PreviewHint = Loc.T("Cover.Hint.GenerateError");
         }
         finally
         {
+            _radioWork = null;
+            _capturingRadioCover = false;
+            _dotsTimer?.Stop();
+            BusyDots = "";
             IsBusy = false;
             PreviousVariantCommand.NotifyCanExecuteChanged();
         }
@@ -192,7 +375,7 @@ public partial class CoverPreviewViewModel : ViewModelBase
     private async Task ShowOriginalAsync()
     {
         var track = _target;
-        if (track == null || IsBusy) return;
+        if (IsRadio || track == null || IsBusy) return;
 
         IsBusy = true;
         try
@@ -232,6 +415,16 @@ public partial class CoverPreviewViewModel : ViewModelBase
 
         try
         {
+            if (IsRadio)
+            {
+                if (IsBusy || _radioAddress == null || !ReferenceEquals(track, _radio!.CurrentTrack)) return;
+                _radioCovers!.Save(_radioAddress, _pendingBytes!);
+                _pendingBytes = null;
+                PreviewHint = Loc.T("Cover.Hint.Saved");
+                CoverSaved?.Invoke(this, track);
+                return;
+            }
+
             if (_pendingClear)
             {
                 await _library.ClearCoverArtAsync(track.Id);

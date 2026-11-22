@@ -1,4 +1,5 @@
 using KebuzPlayer.Infrastructure;
+using KebuzPlayer.Models;
 using KebuzPlayer.Services;
 
 namespace KebuzPlayer.Core.Tests;
@@ -30,6 +31,7 @@ public class JsonSettingsServiceTests : IDisposable
         Assert.False(svc.Current.IsShuffleOn);
         Assert.Equal(RepeatMode.None, svc.Current.RepeatMode);
         Assert.Null(svc.Current.LastTrackId);
+        Assert.Empty(svc.Current.RecentRadioStations);
     }
 
     [Fact]
@@ -66,6 +68,96 @@ public class JsonSettingsServiceTests : IDisposable
         Assert.Equal(TrackViewMode.Grid, reloaded.Current.LibraryViewMode);
         Assert.Equal(TrackViewMode.Compact, reloaded.Current.PlaylistViewModes[3]);
         Assert.Equal(TrackViewMode.Grid, reloaded.Current.PlaylistViewModes[7]);
+    }
+
+    [Fact]
+    public void RecentRadioStations_ReplayMovesToFrontAndRemovalSurvivesRestart()
+    {
+        var svc = new JsonSettingsService(SettingsPath);
+        var first = new RadioStation("https://example.test/first", "First");
+        var second = new RadioStation("https://example.test/second", "Second");
+        svc.RememberRadioStation(first);
+        svc.RememberRadioStation(second);
+        svc.RememberRadioStation(first);
+
+        var reloaded = new JsonSettingsService(SettingsPath);
+        Assert.Equal([first, second], reloaded.Current.RecentRadioStations);
+
+        reloaded.RemoveRadioStation(first.Address);
+
+        Assert.Equal(second, Assert.Single(new JsonSettingsService(SettingsPath).Current.RecentRadioStations));
+    }
+
+    [Fact]
+    public void RecentRadioStations_LoadKeepsValidUniqueAddressesWithinLimit()
+    {
+        var svc = new JsonSettingsService(SettingsPath);
+        svc.Current.RecentRadioStations =
+        [
+            new("https://EXAMPLE.test/radio#now", ""),
+            new("https://example.test/radio", "Duplicate"),
+            new("file:///local.mp3", "Invalid"),
+            .. Enumerable.Range(1, 22).Select(i => new RadioStation($"https://example.test/radio/{i}", $"Station {i}")),
+        ];
+        svc.Save();
+
+        var recent = new JsonSettingsService(SettingsPath).Current.RecentRadioStations;
+        Assert.Equal(20, recent.Count);
+        Assert.Equal(new RadioStation("https://example.test/radio", "example.test"), recent[0]);
+        Assert.Equal("Station 19", recent[^1].Name);
+    }
+
+    [Fact]
+    public void RecentRadioStations_ExplicitNullLoadsAsEmptyList()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
+        File.WriteAllText(SettingsPath, """{"RecentRadioStations": null}""");
+
+        Assert.Empty(new JsonSettingsService(SettingsPath).Current.RecentRadioStations);
+    }
+
+    [Fact]
+    public void RadioStationGain_SavesIndependentlyAndKeepsHistoryOrder()
+    {
+        var svc = new JsonSettingsService(SettingsPath);
+        var first = new RadioStation("https://example.test/first", "First");
+        var second = new RadioStation("https://example.test/second", "Second");
+        svc.RememberRadioStation(first);
+        svc.RememberRadioStation(second);
+
+        svc.SetRadioStationGain(first.Address, -5.5f);
+        svc.SetRadioStationGain(second.Address, 40f);
+        svc.SetRadioStationGain("https://example.test/unknown", 5f);
+
+        var saved = new JsonSettingsService(SettingsPath).Current.RecentRadioStations;
+        Assert.Equal([second with { GainDb = 20f }, first with { GainDb = -5.5f }], saved);
+    }
+
+    [Fact]
+    public void RadioStationGain_OlderHistoryLoadsAtZeroDb()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
+        File.WriteAllText(SettingsPath, """
+            {"RecentRadioStations": [{"Address": "https://example.test/radio", "Name": "Station"}]}
+            """);
+
+        var station = Assert.Single(new JsonSettingsService(SettingsPath).Current.RecentRadioStations);
+        Assert.Equal(0f, station.GainDb);
+    }
+
+    [Fact]
+    public void RemoveRadioStation_WhenSaveFailsKeepsStationInMemoryAndOnDisk()
+    {
+        var svc = new JsonSettingsService(SettingsPath);
+        var station = new RadioStation("https://example.test/stream", "Station");
+        svc.RememberRadioStation(station);
+        Directory.CreateDirectory(SettingsPath + ".tmp");
+
+        var error = Record.Exception(() => svc.RemoveRadioStation(station.Address));
+
+        Assert.True(error is IOException or UnauthorizedAccessException);
+        Assert.Equal(station, Assert.Single(svc.Current.RecentRadioStations));
+        Assert.Equal(station, Assert.Single(new JsonSettingsService(SettingsPath).Current.RecentRadioStations));
     }
 
     [Fact]

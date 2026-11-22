@@ -59,7 +59,7 @@ public partial class App : Application
             {
                 var tracks = files.Select(LibraryService.LoadAdHocTrack).OfType<Models.Track>().ToList();
                 if (tracks.Count == 0) return;
-                if (launches.Joins(startedUtc) && _audio.CurrentTrack != null)
+                if (launches.Joins(startedUtc) && _audio.CurrentTrack != null && !_audio.IsRadio)
                 {
                     foreach (var t in tracks) _audio.Enqueue(t);
                     return;
@@ -114,7 +114,7 @@ public partial class App : Application
             {
                 switch (button)
                 {
-                    case Interop.MediaButton.Play when _audio.State != NAudio.Wave.PlaybackState.Playing:
+                    case Interop.MediaButton.Play when !_audio.IsRadioActive && _audio.State != NAudio.Wave.PlaybackState.Playing:
                     case Interop.MediaButton.Pause when _audio.State == NAudio.Wave.PlaybackState.Playing:
                         _audio.PlayPause();
                         break;
@@ -207,7 +207,7 @@ public partial class App : Application
                     _settings.Current.WindowWidth = window.Width;
                     _settings.Current.WindowHeight = window.Height;
                 }
-                if (_audio.CurrentTrack != null)
+                if (_audio.CurrentTrack != null && !_audio.IsRadio)
                     _settings.Current.LastPositionSeconds = _audio.Position.TotalSeconds;
                 _settings.Save();
                 _audio.Dispose();

@@ -61,21 +61,27 @@
                 Background="{DynamicResource Bg}"
                 BorderBrush="{DynamicResource BorderSoft}"
                 BorderThickness="0,0,0,1">
-            <ListBox Classes="tabbar"
-                     ItemsSource="{Binding Tabs}"
-                     SelectedItem="{Binding SelectedTab}"
-                     Margin="10,6">
-                <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="vm:TabDef">
-                        <StackPanel Orientation="Horizontal" Spacing="7">
-                            <Path Data="{Binding Icon}" Width="18" Height="18" Stretch="None"
-                                  VerticalAlignment="Center" />
-                            <TextBlock Classes="mono" Text="{Binding Title}" FontSize="12"
-                                       VerticalAlignment="Center" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <Grid ColumnDefinitions="*,Auto" Margin="10,6">
+                <ListBox Classes="tabbar"
+                         ItemsSource="{Binding Tabs}"
+                         SelectedItem="{Binding SelectedTab}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TabDef">
+                            <StackPanel Orientation="Horizontal" Spacing="7">
+                                <Path Data="{Binding Icon}" Width="18" Height="18" Stretch="None"
+                                      VerticalAlignment="Center" />
+                                <TextBlock Classes="mono" Text="{Binding Title}" FontSize="12"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Button Grid.Column="1" Classes="ghost" Margin="8,0,0,0" Padding="10,4"
+                        VerticalAlignment="Center" Click="Radio_Click"
+                        AutomationProperties.AutomationId="RadioButton">
+                    <TextBlock Classes="mono" Text="{DynamicResource Radio.Title}" FontSize="12" />
+                </Button>
+            </Grid>
         </Border>
 
         <Border Grid.Row="2"
@@ -114,6 +120,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Button Grid.Column="0" x:Name="CoverButton" Classes="cover" Margin="0,0,14,0"
+                        IsVisible="{Binding !Player.IsRadio}"
                         Click="Cover_Click">
                     <Button.Flyout>
                         <Flyout Placement="TopEdgeAlignedLeft">
@@ -157,6 +164,24 @@
                     </Border>
                 </Button>
 
+                <Button Grid.Column="0" Classes="cover" Margin="0,0,14,0" IsVisible="{Binding Player.IsRadio}"
+                        Click="RadioCover_Click" ToolTip.Tip="{DynamicResource Radio.Cover.Generate}"
+                        AutomationProperties.AutomationId="RadioCoverButton">
+                    <Button.Flyout>
+                        <Flyout Placement="TopEdgeAlignedLeft">
+                            <v:CoverPreviewPanel DataContext="{Binding Player.RadioPreview}" />
+                        </Flyout>
+                    </Button.Flyout>
+                    <Border Width="76" Height="76" Background="{DynamicResource Inset2}"
+                            BorderBrush="{DynamicResource BorderStrong}" BorderThickness="1">
+                        <Panel>
+                            <TextBlock Classes="mono dim" Text="+" FontSize="16"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Image Source="{Binding Player.CoverImage}" Stretch="UniformToFill" />
+                        </Panel>
+                    </Border>
+                </Button>
+
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
                     <TextBlock Text="{Binding Player.Title}" FontSize="15"
                                TextTrimming="CharacterEllipsis" />
@@ -170,7 +195,8 @@
                                IsVisible="{Binding Player.HasError}" />
                 </StackPanel>
 
-                <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="2" Margin="16,0">
+                <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="2" Margin="16,0"
+                            IsVisible="{Binding !Player.IsRadio}">
                     <c:KebuzSlider Classes="thin progress"
                             Minimum="0"
                             Maximum="{Binding Player.DurationSeconds}"
@@ -183,23 +209,39 @@
                     </Grid>
                 </StackPanel>
 
+                <Grid Grid.Column="2" ColumnDefinitions="*,Auto" Margin="16,0" VerticalAlignment="Center"
+                      IsVisible="{Binding Player.IsRadio}">
+                    <TextBlock Classes="mono dim" Text="{Binding Player.RadioStatus}"
+                               IsVisible="{Binding !Player.RadioPreview.IsRadioBusy}" />
+                    <TextBlock Classes="mono dim" Text="{Binding Player.RadioPreview.PreviewHint}"
+                               TextTrimming="CharacterEllipsis" IsVisible="{Binding Player.RadioPreview.IsRadioBusy}" />
+                    <TextBlock Grid.Column="1" Classes="mono" FontSize="12" Width="22" Margin="4,0,0,0"
+                               Text="{Binding Player.RadioPreview.BusyDots}"
+                               IsVisible="{Binding Player.RadioPreview.IsRadioBusy}" />
+                </Grid>
+
                 <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <Button Classes="ctrl" Command="{Binding Player.PreviousCommand}">
+                    <Button Classes="ctrl" Command="{Binding Player.PreviousCommand}"
+                            IsEnabled="{Binding !Player.IsRadio}">
                         <Path Data="M8,0 L8,10 1,5 Z M0,0 L1.5,0 1.5,10 0,10 Z" Stretch="None" />
                     </Button>
                     <Button Classes="play" Command="{Binding Player.PlayPauseCommand}">
                         <Panel>
                             <Path Data="M0,0 L10,6 0,12 Z" Stretch="None"
-                                  IsVisible="{Binding !Player.IsPlaying}" />
+                                  IsVisible="{Binding Player.ShowPlayIcon}" />
                             <Path Data="M0,0 L3,0 3,12 0,12 Z M6,0 L9,0 9,12 6,12 Z" Stretch="None"
-                                  IsVisible="{Binding Player.IsPlaying}" />
+                                  IsVisible="{Binding Player.ShowPauseIcon}" />
+                            <Path Data="M0,0 L10,0 10,10 0,10 Z" Stretch="None"
+                                  IsVisible="{Binding Player.IsRadioActive}" />
                         </Panel>
                     </Button>
-                    <Button Classes="ctrl" Command="{Binding Player.NextCommand}">
+                    <Button Classes="ctrl" Command="{Binding Player.NextCommand}"
+                            IsEnabled="{Binding !Player.IsRadio}">
                         <Path Data="M0,0 L0,10 7,5 Z M6.5,0 L8,0 8,10 6.5,10 Z" Stretch="None" />
                     </Button>
                     <Button Classes="ctrl" Width="24" Height="24"
                             Classes.active="{Binding Player.RepeatActive}"
+                            IsEnabled="{Binding !Player.IsRadio}"
                             Command="{Binding Player.CycleRepeatCommand}">
                         <Panel Width="16" Height="16">
                             <Path Classes="stroke" Stretch="None"
@@ -213,6 +255,7 @@
                     </Button>
                     <Button Classes="ctrl" Width="24" Height="24"
                             Classes.active="{Binding Player.ShuffleActive}"
+                            IsEnabled="{Binding !Player.IsRadio}"
                             Command="{Binding Player.ToggleShuffleCommand}">
                         <Panel Width="17" Height="16">
                             <Path Classes="stroke" Stretch="None"

@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -74,6 +75,16 @@ public partial class MainWindow : Window
 
     private void VizFullscreen_PointerMoved(object? sender, PointerEventArgs e) => ShowVizHint();
 
+    private void Radio_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || DataContext is not MainWindowViewModel vm) return;
+        var panel = new Controls.RadioPanel { DataContext = vm.Player };
+        var flyout = new Flyout { Content = panel, Placement = PlacementMode.BottomEdgeAlignedRight };
+        flyout.Opened += (_, _) => panel.FocusAddress();
+        panel.DismissRequested += (_, _) => flyout.Hide();
+        flyout.ShowAt(button);
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         if (e.Key == Key.F11)
@@ -120,6 +131,11 @@ public partial class MainWindow : Window
     {
         if (DataContext is MainWindowViewModel vm)
             vm.Player.OpenPreviewCommand.Execute(null);
+    }
+
+    private void RadioCover_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.Player.OpenRadioCover();
     }
 
     private void NowPlayingPreviewCover_Click(object? sender, RoutedEventArgs e)

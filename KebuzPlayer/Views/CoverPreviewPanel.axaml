@@ -22,6 +22,7 @@
                        IsVisible="{Binding !IsGridVisible}" />
                 <ItemsControl ItemsSource="{Binding Variants}"
                               IsVisible="{Binding IsGridVisible}"
+                              IsHitTestVisible="{Binding !IsRadioBusy}"
                               HorizontalAlignment="Center" VerticalAlignment="Center">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -42,13 +43,26 @@
                 </ItemsControl>
             </Panel>
         </Border>
-        <TextBlock Classes="mono dim" FontSize="10" LetterSpacing="0.8"
-                   Text="{Binding PreviewHint}" />
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Classes="mono dim" FontSize="11" LetterSpacing="0.8"
+                       Text="{Binding PreviewHint}" />
+            <TextBlock Classes="mono" FontSize="12" Width="22" Text="{Binding BusyDots}"
+                       IsVisible="{Binding IsRadioBusy}" />
+        </StackPanel>
+        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding IsRadio}">
+            <Button Classes="ghost" Content="{Binding RadioCaptureLabel}"
+                    HorizontalAlignment="Left" Command="{Binding CaptureRadioCoverCommand}" />
+            <Button Grid.Column="1" Classes="ghost" Content="{DynamicResource Common.Cancel}"
+                    Command="{Binding CancelRadioCoverCommand}" IsVisible="{Binding IsRadioBusy}" />
+        </Grid>
+        <Button Classes="ghost" Content="{DynamicResource Radio.Cover.ShowVariants}"
+                HorizontalAlignment="Left" Command="{Binding RestoreRadioVariantsCommand}"
+                IsVisible="{Binding HasSavedRadioVariants}" />
         <CheckBox Content="{DynamicResource Cover.WriteToFile}"
                   ToolTip.Tip="{DynamicResource Cover.WriteToFileTip}"
                   IsChecked="{Binding WriteToFile}"
                   IsVisible="{Binding CanWriteToFile}" />
-        <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+        <Grid ColumnDefinitions="Auto,Auto,*,Auto" IsVisible="{Binding CanBrowseVariants}">
             <Button Grid.Column="0" Classes="ghost" Content="←"
                     ToolTip.Tip="{DynamicResource Cover.Prev}"
                     Command="{Binding PreviousVariantCommand}" />
@@ -57,6 +71,7 @@
                     Command="{Binding RegenerateVariantCommand}" />
             <Button Grid.Column="2" Classes="ghost" Content="{DynamicResource Cover.Original}" Margin="8,0,0,0"
                     HorizontalAlignment="Left"
+                    IsVisible="{Binding !IsRadio}"
                     ToolTip.Tip="{DynamicResource Cover.OriginalTip}"
                     Command="{Binding ShowOriginalCommand}" />
             <Button Grid.Column="3" Classes="primary" Content="{DynamicResource Common.Save}"
